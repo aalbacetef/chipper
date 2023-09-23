@@ -200,7 +200,9 @@ func match(in, out []int) bool {
 	return true
 }
 
-func Decode(instr uint16) (Instruction, error) {
+func Decode(p []byte) (Instruction, error) {
+	instr := toUint16(p)
+
 	d0 := (instr & 0xF000) >> (3 * 4)
 	d1 := (instr & 0x0F00) >> (2 * 4)
 	d2 := (instr & 0x00F0) >> (1 * 4)

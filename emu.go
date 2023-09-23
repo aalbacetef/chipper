@@ -59,7 +59,7 @@ func NewEmulator(stackSize, ramSize, w, h int) (*Emulator, error) {
 
 // Tick .
 func (emu *Emulator) Tick() error {
-	pc := emu.PC
+	// pc := emu.PC
 
 	// fetch
 	instrBytes, err := emu.fetch(InstructionSize)
@@ -72,16 +72,16 @@ func (emu *Emulator) Tick() error {
 
 	fmt.Printf("(instruction) %#0x\n", toUint16(instrBytes))
 	// decode
-	instr, err := Decode(toUint16(instrBytes))
+	instr, err := Decode(instrBytes)
 	if err != nil {
 		return fmt.Errorf("could not decode instruction: %w", err)
 	}
 
 	// execute
-	fmt.Printf("(%#0x) %+v\n", pc, instr)
+	//fmt.Printf("(%#0x) %+v\n", pc, instr)
 	execErr := emu.Execute(instr)
 	if execErr != nil {
-		fmt.Println("execution error: ", execErr)
+		//fmt.Println("execution error: ", execErr)
 		return execErr
 	}
 
