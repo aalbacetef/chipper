@@ -58,15 +58,11 @@ func main() {
 		fmt.Fprintf(
 			tw,
 			"%0#4x) %s \t=> %0#3x \t| %+v\n",
-			k+0x200, instr.Op, toAddr3(instr.Operands), instr.Operands,
+			k+0x200, instr.Op, chipper.ToAddr3(instr.Operands), instr.Operands,
 		)
 		k += bytesRead
 	}
 
 	tw.Flush()
 	fmt.Println(b.String())
-}
-
-func toAddr3(p []int) uint16 {
-	return (uint16(p[0]) << (2 * 4)) | (uint16(p[1]) << 4) | (uint16(p[2]))
 }

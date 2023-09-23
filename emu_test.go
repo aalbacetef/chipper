@@ -3,7 +3,10 @@ package chipper
 import (
 	"bytes"
 	_ "embed"
+	"fmt"
+	"strings"
 	"testing"
+	"time"
 )
 
 //go:embed testdata/maze-alt-david-winter-199x.ch8
@@ -32,5 +35,18 @@ func TestEmulator(t *testing.T) {
 		if tickErr != nil {
 			t.Fatalf("error from Tick: %v", tickErr)
 		}
+		time.Sleep(time.Second)
+		fmt.Println("->")
+		b := &strings.Builder{}
+		for k, v := range emu.V {
+			fmt.Fprintf(
+				b,
+				"  (v%2d) %#0b\n",
+				k, v,
+			)
+		}
+		fmt.Println(b.String())
+		fmt.Println("---------------")
+
 	}
 }

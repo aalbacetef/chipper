@@ -70,7 +70,6 @@ func (emu *Emulator) Tick() error {
 	// update PC
 	emu.PC += uint16(InstructionSize)
 
-	fmt.Printf("(instruction) %#0x\n", toUint16(instrBytes))
 	// decode
 	instr, err := Decode(instrBytes)
 	if err != nil {
@@ -78,6 +77,7 @@ func (emu *Emulator) Tick() error {
 	}
 
 	// execute
+	fmt.Println("instruction: ", instr)
 	//fmt.Printf("(%#0x) %+v\n", pc, instr)
 	execErr := emu.Execute(instr)
 	if execErr != nil {
@@ -86,10 +86,6 @@ func (emu *Emulator) Tick() error {
 	}
 
 	return nil
-}
-
-func toUint16(b []byte) uint16 {
-	return (uint16(b[0]) << 8) | uint16(b[1])
 }
 
 // fetch .
