@@ -1,13 +1,16 @@
 package chipper
 
 import (
-	"fmt"
 	"testing"
 )
 
 func TestOpcode(t *testing.T) {
-	a := []int{0x1, 0xA, 0xE, 0xF}
-	b := a[2:]
-	fmt.Printf("b: %#0x, %#0x\n", b[0], b[1])
 
+	b := []byte{0x1a, 0xe1}
+	want := 0x1ae1
+	got := toUint16(b)
+
+	if got != uint16(want) {
+		t.Fatalf("got %#0x, want %#0x", got, want)
+	}
 }

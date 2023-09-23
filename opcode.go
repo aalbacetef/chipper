@@ -2,46 +2,46 @@ package chipper
 
 import "fmt"
 
-type Opcode int
+type Opcode string
 
 const (
-	Unknown Opcode = iota
-	Nop
-	ExecNNN
-	Clear
-	Return
-	JumpNNN
-	CallSub
-	SkipIfXEqNN
-	SkipIfXNotEqNN
-	SkipIfXEqY
-	StoreNNInX
-	AddNNToX
-	StoreYinX
-	SetXtoXORY
-	SetXToXANDY
-	SetXtoXXORY
-	AddYToX
-	SubYFromX
-	StoreYShiftedRightInX
-	SetXToYMinusX
-	StoreYShiftedLeftInX
-	SkipIfXNotEqY
-	StoreMemAddrNNNInRegI
-	JumpToAddrNNNPlusV0
-	SetXToRandomNumWithMaskNN
-	DrawSpriteInXY
-	SkipIfKeyInXIsPressed
-	SkipIfKeyInXNotPressed
-	StoreValDTInX
-	WaitForKeyAndStoreInX
-	SetDTToX
-	SetSTToX
-	AddXToI
-	SetIToMemAddrOfSpriteInX
-	StoreBCDOfXInI
-	Store0ToXInI
-	Fill0ToXWithValueInAddrI
+	Unknown                   Opcode = "Unknown"
+	Nop                       Opcode = "Nop"
+	ExecNNN                   Opcode = "ExecNNN"
+	Clear                     Opcode = "Clear"
+	Return                    Opcode = "Return"
+	JumpNNN                   Opcode = "JumpNNN"
+	CallSub                   Opcode = "CallSub"
+	SkipIfXEqNN               Opcode = "SkipIfXEqNN"
+	SkipIfXNotEqNN            Opcode = "SkipIfXNotEqNN"
+	SkipIfXEqY                Opcode = "SkipIfXEqY"
+	StoreNNInX                Opcode = "StoreNNInX"
+	AddNNToX                  Opcode = "AddNNToX"
+	StoreYinX                 Opcode = "StoreYinX"
+	SetXToXORY                Opcode = "SetXToXORY"
+	SetXToXANDY               Opcode = "SetXToXANDY"
+	SetXToXXORY               Opcode = "SetXToXXORY"
+	AddYToX                   Opcode = "AddYToX"
+	SubYFromX                 Opcode = "SubYFromX"
+	StoreYShiftedRightInX     Opcode = "StoreYShiftedRightInX"
+	SetXToYMinusX             Opcode = "SetXToYMinusX"
+	StoreYShiftedLeftInX      Opcode = "StoreYShiftedLeftInX"
+	SkipIfXNotEqY             Opcode = "SkipIfXNotEqY"
+	StoreMemAddrNNNInRegI     Opcode = "StoreMemAddrNNNInRegI"
+	JumpToAddrNNNPlusV0       Opcode = "JumpToAddrNNNPlusV0"
+	SetXToRandomNumWithMaskNN Opcode = "SetXToRandomNumWithMaskNN"
+	DrawSpriteInXY            Opcode = "DrawSpriteInXY"
+	SkipIfKeyInXIsPressed     Opcode = "SkipIfKeyInXIsPressed"
+	SkipIfKeyInXNotPressed    Opcode = "SkipIfKeyInXNotPressed"
+	StoreValDTInX             Opcode = "StoreValDTInX"
+	WaitForKeyAndStoreInX     Opcode = "WaitForKeyAndStoreInX"
+	SetDTToX                  Opcode = "SetDTToX"
+	SetSTToX                  Opcode = "SetSTToX"
+	AddXToI                   Opcode = "AddXToI"
+	SetIToMemAddrOfSpriteInX  Opcode = "SetIToMemAddrOfSpriteInX"
+	StoreBCDOfXInI            Opcode = "StoreBCDOfXInI"
+	Store0ToXInI              Opcode = "Store0ToXInI"
+	Fill0ToXWithValueInAddrI  Opcode = "Fill0ToXWithValueInAddrI"
 )
 
 // DetermineOpcode will return the appropriate Opcode given the digits passed in.
@@ -92,11 +92,11 @@ func DetermineOpcode(digits []int) Opcode {
 		case 0:
 			return StoreYinX
 		case 1:
-			return SetXtoXORY
+			return SetXToXORY
 		case 2:
 			return SetXToXANDY
 		case 3:
-			return SetXtoXXORY
+			return SetXToXXORY
 		case 4:
 			return AddYToX
 		case 5:
@@ -201,9 +201,9 @@ func match(in, out []int) bool {
 }
 
 func Decode(instr uint16) (Instruction, error) {
-	d0 := (instr & 0xF000) >> 3
-	d1 := (instr & 0x0F00) >> 2
-	d2 := (instr & 0x00F0) >> 1
+	d0 := (instr & 0xF000) >> (3 * 4)
+	d1 := (instr & 0x0F00) >> (2 * 4)
+	d2 := (instr & 0x00F0) >> (1 * 4)
 	d3 := (instr & 0x000F)
 
 	digits := [4]int{

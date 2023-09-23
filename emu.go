@@ -1,6 +1,9 @@
 package chipper
 
-import "fmt"
+import (
+	"fmt"
+	"io"
+)
 
 const (
 	ProgramCounterSize = 2     // Size in bytes.
@@ -54,7 +57,10 @@ func NewEmulator(stackSize, ramSize, w, h int) (*Emulator, error) {
 	}, nil
 }
 
+// Tick .
 func (emu *Emulator) Tick() error {
+	pc := emu.PC
+
 	// fetch
 	instrBytes, err := emu.fetch(InstructionSize)
 	if err != nil {
@@ -64,6 +70,7 @@ func (emu *Emulator) Tick() error {
 	// update PC
 	emu.PC += uint16(InstructionSize)
 
+	fmt.Printf("(instruction) %#0x\n", toUint16(instrBytes))
 	// decode
 	instr, err := Decode(toUint16(instrBytes))
 	if err != nil {
@@ -71,15 +78,21 @@ func (emu *Emulator) Tick() error {
 	}
 
 	// execute
-	fmt.Println("instruction: ", instr)
+	fmt.Printf("(%#0x) %+v\n", pc, instr)
+	execErr := emu.Execute(instr)
+	if execErr != nil {
+		fmt.Println("execution error: ", execErr)
+		return execErr
+	}
 
-	return fmt.Errorf("not implemented")
+	return nil
 }
 
 func toUint16(b []byte) uint16 {
-	return (uint16(b[0]) << 2) | uint16(b[1])
+	return (uint16(b[0]) << 8) | uint16(b[1])
 }
 
+// fetch .
 func (emu *Emulator) fetch(numBytes int) ([]byte, error) {
 	pc := int(emu.PC)
 	ramSize := len(emu.RAM)
@@ -97,4 +110,23 @@ func (emu *Emulator) fetch(numBytes int) ([]byte, error) {
 	}
 
 	return read, nil
+}
+
+// Load .
+func (emu *Emulator) Load(r io.Reader) error {
+	ramSize := len(emu.RAM)
+	maxSize := ramSize - StartAddress
+	p := make([]byte, maxSize)
+
+	bytesRead, err := r.Read(p)
+	if err != nil {
+		return fmt.Errorf("error reading ROM: %w", err)
+	}
+	p = p[:bytesRead]
+
+	for k, b := range p {
+		emu.RAM[int(StartAddress)+k] = b
+	}
+
+	return nil
 }
