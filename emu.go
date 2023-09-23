@@ -110,6 +110,10 @@ func (emu *Emulator) fetch(numBytes int) ([]byte, error) {
 
 // Load .
 func (emu *Emulator) Load(r io.Reader) error {
+	if err := loadSprites(emu); err != nil {
+		return fmt.Errorf("could not load sprites: %w", err)
+	}
+
 	ramSize := len(emu.RAM)
 	maxSize := ramSize - StartAddress
 	p := make([]byte, maxSize)

@@ -1,6 +1,10 @@
 package chipper
 
-import "fmt"
+import (
+	"fmt"
+	"math"
+	"math/rand"
+)
 
 func ToAddr3(p []int) (uint16, error) {
 	n := len(p)
@@ -39,4 +43,26 @@ func ToByte(p []int) (byte, error) {
 	val := byte(p[0])<<4 | byte(p[1])
 
 	return val, nil
+}
+
+func randomNum() byte {
+	return byte(rand.Intn(256))
+}
+
+func bcdOfInt(v int) ([]byte, error) {
+	if v > 0xFF {
+		return nil, fmt.Errorf("int (%d) exceeds max value %d", v, 0xFF)
+	}
+
+	n := 3
+	p := make([]byte, 3)
+
+	for k := 0; k < n; k++ {
+		div := int(math.Pow(10, float64(n-k)))
+		p[k] = byte(v / div)
+		v = v - (int(p[k]) * div)
+	}
+
+	return p, nil
+
 }

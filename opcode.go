@@ -131,11 +131,12 @@ func DetermineOpcode(digits []int) Opcode {
 		return DrawSpriteInXY
 
 	case 0xE:
-		if match(digits[2:], []int{9, 0xE}) {
+		lastTwo := digits[2:]
+		if match(lastTwo, []int{9, 0xE}) {
 			return SkipIfKeyInXIsPressed
 		}
 
-		if match(digits[2:], []int{0xA, 1}) {
+		if match(lastTwo, []int{0xA, 1}) {
 			return SkipIfKeyInXNotPressed
 		}
 
