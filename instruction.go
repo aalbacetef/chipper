@@ -138,7 +138,7 @@ func (emu *Emulator) clearScreen() error {
 
 	for x := 0; x < dx; x++ {
 		for y := 0; y < dy; y++ {
-			if err := emu.Display.Set(x, y, ColorWhite); err != nil {
+			if err := emu.Display.Set(x, y, ColorBlack); err != nil {
 				return fmt.Errorf("could not clear pixel at (%d, %d): %w", x, y, err)
 			}
 		}
@@ -500,7 +500,8 @@ func (emu *Emulator) setXToRandomNumWithMaskNN(x int, args []int) error {
 		return err
 	}
 
-	emu.V[x] = randomNum() & val
+	rn := randomNum()
+	emu.V[x] = rn & val
 
 	return nil
 }
@@ -531,7 +532,7 @@ func (emu *Emulator) drawSpriteInXY(x, y, n int) error {
 			}
 
 			wrappedX := (posx + xline) % dx
-			wrappedY := (posy + yline) & dy
+			wrappedY := (posy + yline) % dy
 
 			pix := emu.Display.At(wrappedX, wrappedY)
 			flipped |= byte(pix)

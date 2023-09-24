@@ -1,6 +1,9 @@
 package chipper
 
-import "fmt"
+import (
+	"fmt"
+	"strings"
+)
 
 // NewStack will return a stack of size N, with the data already allocated.
 func NewStack(size int) (*Stack, error) {
@@ -21,6 +24,19 @@ type Stack struct {
 	size    int
 	data    []uint16
 	pointer int
+}
+
+func (s Stack) String() string {
+	if s.pointer == 0 {
+		return "Stack: <empty stack>"
+	}
+
+	b := &strings.Builder{}
+	for k, v := range s.data[:s.pointer] {
+		fmt.Fprintf(b, "%2d) %0#4x\n", k, v)
+	}
+
+	return b.String()
 }
 
 // Pop an element of the stack, will error if the stack is empty.

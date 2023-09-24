@@ -31,7 +31,7 @@ func (d *Display) String() string {
 				c = "+"
 			}
 
-			fmt.Fprintf(b, "%s ", c)
+			fmt.Fprintf(b, "%s", c)
 		}
 		fmt.Fprintf(b, "  \n")
 	}

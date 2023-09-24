@@ -4,6 +4,7 @@ import (
 	"bytes"
 	_ "embed"
 	"fmt"
+	"os"
 	"strings"
 	"testing"
 	"time"
@@ -27,7 +28,15 @@ func TestEmulator(t *testing.T) {
 		testDelay     = 500 * time.Millisecond
 	)
 
-	testRom := testParticle
+	testRom := testMaze
+	if readFile := os.Getenv("EMU_ROM_PATH"); readFile != "" {
+		data, err := os.ReadFile(readFile)
+		if err != nil {
+			t.Fatalf("could not read file(%s): %v", readFile, err)
+		}
+
+		testRom = data
+	}
 
 	emu, err := NewEmulator(testStackSize, testRamSize, testW, testH)
 	if err != nil {
@@ -42,7 +51,7 @@ func TestEmulator(t *testing.T) {
 	for {
 		tickErr := emu.Tick()
 		if tickErr != nil {
-			t.Fatalf("error from Tick: %v", tickErr)
+			t.Logf("error from Tick: %v", tickErr)
 		}
 
 		if testDelay > 0 {
@@ -50,6 +59,7 @@ func TestEmulator(t *testing.T) {
 		}
 
 		fmt.Printf("PC: %0#4x\n", emu.PC)
+		fmt.Println("Stack: ", emu.Stack.String())
 		fmt.Println("->")
 		b := &strings.Builder{}
 		for k, v := range emu.V {

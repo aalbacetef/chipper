@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"math"
 	"math/rand"
+	"strings"
 )
 
 func ToAddr3(p []int) (uint16, error) {
@@ -64,5 +65,23 @@ func bcdOfInt(v int) ([]byte, error) {
 	}
 
 	return p, nil
+
+}
+
+func dumpEmu(emu *Emulator) {
+	fmt.Printf("PC: %0#4x\n", emu.PC)
+	fmt.Println("Stack: ", emu.Stack.String())
+	fmt.Println("->")
+	b := &strings.Builder{}
+	for k, v := range emu.V {
+		fmt.Fprintf(
+			b,
+			"  (v%2d) %#0x\n",
+			k, v,
+		)
+	}
+	fmt.Println(b.String())
+	fmt.Println(emu.Display.String())
+	fmt.Println("---------------")
 
 }
