@@ -9,7 +9,7 @@ const (
 	Nop                       Opcode = "Nop"
 	ExecNNN                   Opcode = "ExecNNN"
 	Clear                     Opcode = "Clear"
-	Return                    Opcode = "Return"
+	ReturnFromSub             Opcode = "ReturnFromSub"
 	JumpNNN                   Opcode = "JumpNNN"
 	CallSub                   Opcode = "CallSub"
 	SkipIfXEqNN               Opcode = "SkipIfXEqNN"
@@ -61,7 +61,7 @@ func DetermineOpcode(digits []int) Opcode {
 		}
 
 		if match(digits[1:], []int{0, 0xE, 0xE}) {
-			return Return
+			return ReturnFromSub
 		}
 
 		return ExecNNN

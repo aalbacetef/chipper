@@ -22,20 +22,29 @@ type Display struct {
 func (d *Display) String() string {
 	b := &strings.Builder{}
 	rows := d.height
+	cols := d.width
 
-	for k := 0; k < rows; k++ {
-		fmt.Fprintf(b, "  ")
-		for j := 0; j < d.width; j++ {
+	top := &strings.Builder{}
+	top.WriteString("     ")
+	for k := 0; k < cols; k++ {
+		fmt.Fprintf(top, "-")
+	}
+
+	b.WriteString(top.String())
+	fmt.Fprintf(b, "\n")
+	for y := 0; y < rows; y++ {
+		fmt.Fprintf(b, " %2d |", y)
+		for x := 0; x < cols; x++ {
 			c := "."
-			if int(d.At(j, k)) != 0 {
+			if d.At(x, y) == ColorWhite {
 				c = "+"
 			}
 
 			fmt.Fprintf(b, "%s", c)
 		}
-		fmt.Fprintf(b, "  \n")
+		fmt.Fprintf(b, "|\n")
 	}
-
+	b.WriteString(top.String())
 	return b.String()
 }
 

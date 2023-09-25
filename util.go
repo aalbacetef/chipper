@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"math"
 	"math/rand"
+	"os"
+	"os/exec"
 	"strings"
 )
 
@@ -68,8 +70,18 @@ func bcdOfInt(v int) ([]byte, error) {
 
 }
 
-func dumpEmu(emu *Emulator) {
+func DumpEmu(emu *Emulator) {
+	p := make([]byte, 2)
+	copy(emu.RAM[emu.PC:emu.PC+2], p)
+
+	instr, _ := Decode(p)
+
+	cmd := exec.Command("clear")
+	cmd.Stdout = os.Stdout
+
+	fmt.Println("instruction: ", instr)
 	fmt.Printf("PC: %0#4x\n", emu.PC)
+	fmt.Printf("I: %0#4x\n", emu.Index)
 	fmt.Println("Stack: ", emu.Stack.String())
 	fmt.Println("->")
 	b := &strings.Builder{}
@@ -80,8 +92,6 @@ func dumpEmu(emu *Emulator) {
 			k, v,
 		)
 	}
-	fmt.Println(b.String())
+	fmt.Print(b.String())
 	fmt.Println(emu.Display.String())
-	fmt.Println("---------------")
-
 }

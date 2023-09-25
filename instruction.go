@@ -31,7 +31,7 @@ func (emu *Emulator) Execute(instr Instruction) error {
 	case Clear:
 		return emu.clearScreen()
 
-	case Return:
+	case ReturnFromSub:
 		return emu.returnFromSub()
 
 	case JumpNNN:
@@ -50,10 +50,10 @@ func (emu *Emulator) Execute(instr Instruction) error {
 		return emu.skipIfXEqY(args[0], args[1])
 
 	case StoreNNInX:
-		return emu.storeNNInX(args[:2], args[2])
+		return emu.storeNNInX(args[0], args[1:])
 
 	case AddNNToX:
-		return emu.addNNToX(args[:2], args[2])
+		return emu.addNNToX(args[0], args[1:])
 
 	case StoreYinX:
 		return emu.storeYinX(args[0], args[1])
@@ -242,7 +242,7 @@ func (emu *Emulator) skipIfXEqY(x, y int) error {
 }
 
 // storeNNInX will store the value in VX.
-func (emu *Emulator) storeNNInX(args []int, x int) error {
+func (emu *Emulator) storeNNInX(x int, args []int) error {
 	if err := isInBounds(RegisterCount, x); err != nil {
 		return err
 	}
@@ -258,7 +258,7 @@ func (emu *Emulator) storeNNInX(args []int, x int) error {
 }
 
 // addNNToX will add NN to VX and store the (wrapped) result in VX.
-func (emu *Emulator) addNNToX(args []int, x int) error {
+func (emu *Emulator) addNNToX(x int, args []int) error {
 	if err := isInBounds(RegisterCount, x); err != nil {
 		return err
 	}
@@ -592,6 +592,10 @@ func (emu *Emulator) waitForKeyAndStoreInX(x int) error {
 	}
 
 	delay := 50 * time.Millisecond
+	fmt.Println("__--------------------------")
+	fmt.Printf("keys: %+v\n", emu.Keys)
+	time.Sleep(2 * time.Second)
+
 	for {
 		for k, key := range emu.Keys {
 			if key {
@@ -602,7 +606,6 @@ func (emu *Emulator) waitForKeyAndStoreInX(x int) error {
 
 		time.Sleep(delay)
 	}
-
 }
 
 func (emu *Emulator) setDTToX(x int) error {

@@ -1,6 +1,7 @@
 package chipper
 
 import (
+	"errors"
 	"fmt"
 	"io"
 )
@@ -49,12 +50,18 @@ func NewEmulator(stackSize, ramSize, w, h int) (*Emulator, error) {
 		return nil, fmt.Errorf("could not create display: %w", err)
 	}
 
-	return &Emulator{
+	emu := &Emulator{
 		PC:      StartAddress,
 		Stack:   stack,
 		RAM:     ram,
 		Display: display,
-	}, nil
+	}
+
+	if err := loadSprites(emu); err != nil {
+		return nil, fmt.Errorf("could not load sprites into emulator: %w", err)
+	}
+
+	return emu, nil
 }
 
 // Tick .
@@ -62,8 +69,11 @@ func (emu *Emulator) Tick() error {
 	// pc := emu.PC
 
 	// fetch
-	instrBytes, err := emu.fetch(InstructionSize)
+	instrBytes, err := emu.Fetch(InstructionSize)
 	if err != nil {
+		if errors.Is(err, io.EOF) {
+			return fmt.Errorf("reached last instruction: %w", io.EOF)
+		}
 		return fmt.Errorf("error fetching instruction: %w", err)
 	}
 
@@ -89,14 +99,14 @@ func (emu *Emulator) Tick() error {
 }
 
 // fetch .
-func (emu *Emulator) fetch(numBytes int) ([]byte, error) {
+func (emu *Emulator) Fetch(numBytes int) ([]byte, error) {
 	pc := int(emu.PC)
 	ramSize := len(emu.RAM)
 
 	if pc+numBytes >= ramSize {
 		return nil, fmt.Errorf(
-			"out of bounds (PC=%d, numBytes=%d, RAMSize=%d)",
-			pc, numBytes, ramSize,
+			"out of bounds (PC=%d, numBytes=%d, RAMSize=%d): %w",
+			pc, numBytes, ramSize, io.EOF,
 		)
 	}
 
