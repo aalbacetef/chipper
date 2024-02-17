@@ -20,7 +20,6 @@ func mkEmu(t *testing.T) *Emulator {
 }
 
 func TestInstruction(t *testing.T) {
-
 	t.Run("clearScreen", func(tt *testing.T) {
 		emu := mkEmu(tt)
 		for k := range emu.Display.data {

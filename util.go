@@ -15,7 +15,7 @@ func ToAddr3(p []int) (uint16, error) {
 		return 0, fmt.Errorf("expected 3 values, got %d", n)
 	}
 
-	addr := uint16(p[0])<<(8) | uint16(p[1])<<4 | uint16(p[0])
+	addr := uint16(p[0])<<(8) | uint16(p[1])<<4 | uint16(p[2])
 
 	return addr, nil
 }
@@ -57,8 +57,8 @@ func bcdOfInt(v int) ([]byte, error) {
 		return nil, fmt.Errorf("int (%d) exceeds max value %d", v, 0xFF)
 	}
 
-	n := 3
-	p := make([]byte, 3)
+	const n = 3
+	p := make([]byte, n)
 
 	for k := 0; k < n; k++ {
 		div := int(math.Pow(10, float64(n-k)))
@@ -72,12 +72,13 @@ func bcdOfInt(v int) ([]byte, error) {
 
 func DumpEmu(emu *Emulator) {
 	p := make([]byte, 2)
-	copy(emu.RAM[emu.PC:emu.PC+2], p)
+	copy(p, emu.RAM[emu.PC:emu.PC+2])
 
 	instr, _ := Decode(p)
 
 	cmd := exec.Command("clear")
 	cmd.Stdout = os.Stdout
+	cmd.Run()
 
 	fmt.Println("instruction: ", instr)
 	fmt.Printf("PC: %0#4x\n", emu.PC)

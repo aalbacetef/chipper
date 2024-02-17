@@ -28,6 +28,8 @@ func (emu *Emulator) Execute(instr Instruction) error {
 		fmt.Println("unimplemented")
 		return nil //	return fmt.Errorf("bad instruction: %v", instr)
 
+	case ExecNNN:
+		return nil
 	case Clear:
 		return emu.clearScreen()
 
@@ -516,35 +518,58 @@ func (emu *Emulator) drawSpriteInXY(x, y, n int) error {
 		return err
 	}
 
-	posx, posy := int(emu.V[x]), int(emu.V[y])
 	b := emu.Display.Bounds()
 	dx, dy := b.Dx(), b.Dy()
-	flipped := byte(0)
+
+	posx, posy := int(emu.V[x]), int(emu.V[y])
+
+	emu.V[0xF] = 0
 
 	for yline := 0; yline < n; yline++ {
 		addr := int(emu.Index) + yline
 		pixels := emu.RAM[addr]
 
 		for xline := 0; xline < 8; xline++ {
-			val := (pixels & (0b10000000 >> xline))
-			if val == 0 {
-				continue
+			v := (pixels >> (7 - xline)) & 1
+
+			xpos := (posx + xline) % dx
+			ypos := (posy + yline) % dx
+			at := emu.Display.At(xpos, ypos)
+
+			newPix := v ^ byte(at)
+			if Color(v) == at {
+				emu.V[0xF] = 1
 			}
 
-			wrappedX := (posx + xline) % dx
-			wrappedY := (posy + yline) % dy
-
-			pix := emu.Display.At(wrappedX, wrappedY)
-			flipped |= byte(pix)
-			if err := emu.Display.Set(wrappedX, wrappedY, ColorWhite); err != nil {
-				return fmt.Errorf("could not set (%d, %d): %w", wrappedX, wrappedY, err)
+			if err := emu.Display.Set(xpos, ypos, Color(newPix)); err != nil {
+				return fmt.Errorf("could not set (%d, %d, %s): %w", xpos, ypos, Color(newPix), err)
 			}
+			// mask := byte(0b10000000 >> xline)
+			// val := (pixels & mask)
+			// if val == byte(ColorBlack) {
+			// 	continue
+			// }
+			//
+			// c := Color(val)
+			//
+			// xpos := (posx + xline) % dx
+			// ypos := (posy + yline) % dy
+			//
+			// pix := emu.Display.At(xpos, ypos)
+			//
+			// if pix == ColorWhite && pix == c {
+			// 	emu.V[0xF] = 1
+			// 	c = ColorBlack
+			// }
+			//
+			// if err := emu.Display.Set(xpos, ypos, c); err != nil {
+			// 	return fmt.Errorf("could not set (%d, %d): %w", xpos, ypos, err)
+			// }
 		}
-	}
 
-	emu.V[0xF] = 0
-	if flipped != 0 {
-		emu.V[0xF] = 1
+		if (posy + yline) >= dy {
+			break
+		}
 	}
 
 	return nil
@@ -591,10 +616,15 @@ func (emu *Emulator) waitForKeyAndStoreInX(x int) error {
 		return err
 	}
 
-	delay := 50 * time.Millisecond
-	fmt.Println("__--------------------------")
-	fmt.Printf("keys: %+v\n", emu.Keys)
-	time.Sleep(2 * time.Second)
+	l := Listener{
+		EventType: "KeyEvent",
+		ID:        "waitForKeyAndStoreInX",
+		ch:        make(chan Event, 1),
+	}
+
+	emu.listeners.Add(l)
+	ev := <-l.ch
+	emu.listeners.Del(l.ID)
 
 	for {
 		for k, key := range emu.Keys {
@@ -603,8 +633,6 @@ func (emu *Emulator) waitForKeyAndStoreInX(x int) error {
 				return nil
 			}
 		}
-
-		time.Sleep(delay)
 	}
 }
 

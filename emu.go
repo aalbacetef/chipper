@@ -1,9 +1,11 @@
 package chipper
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"io"
+	"sync"
 )
 
 const (
@@ -24,6 +26,77 @@ type Emulator struct {
 	Stack      *Stack
 	RAM        []byte
 	Display    *Display
+	cancelFns  []context.CancelFunc
+	listeners  Listeners
+}
+
+func (emu *Emulator) Close() {
+	for _, cancel := range emu.cancelFns {
+		cancel()
+	}
+}
+
+type EventType string
+
+type Listener struct {
+	ID        string
+	EventType EventType
+	ch        chan Event
+}
+
+type Listeners struct {
+	listeners []Listener
+	mu        sync.Mutex
+}
+
+func (ls *Listeners) All() []Listener {
+	ls.mu.Lock()
+	listeners := make([]Listener, len(ls.listeners))
+	copy(listeners, ls.listeners)
+	ls.mu.Unlock()
+
+	return listeners
+}
+
+func (ls *Listeners) Del(id string) {
+	ls.mu.Lock()
+	defer ls.mu.Unlock()
+
+	listeners := make([]Listener, 0, len(ls.listeners)-1)
+	for _, l := range ls.listeners {
+		if l.ID == id {
+			continue
+		}
+
+		listeners = append(listeners, l)
+	}
+	ls.listeners = listeners
+}
+
+func (ls *Listeners) Add(l Listener) {
+	ls.mu.Lock()
+	defer ls.mu.Unlock()
+
+	ls.listeners = append(ls.listeners, l)
+}
+
+type Event struct{}
+
+func (emu *Emulator) RegisterEventSource(src <-chan Event) {
+	ctx, cancel := context.WithCancel(context.Background())
+	emu.cancelFns = append(emu.cancelFns, cancel)
+	go func() {
+		for {
+			select {
+			case <-ctx.Done():
+				return
+			case ev := <-src:
+				for _, l := range emu.listeners.All() {
+					l.ch <- ev
+				}
+			}
+		}
+	}()
 }
 
 func NewRAM(size int) ([]byte, error) {
@@ -88,7 +161,7 @@ func (emu *Emulator) Tick() error {
 
 	// execute
 	fmt.Println("instruction: ", instr)
-	//fmt.Printf("(%#0x) %+v\n", pc, instr)
+
 	execErr := emu.Execute(instr)
 	if execErr != nil {
 		//fmt.Println("execution error: ", execErr)
