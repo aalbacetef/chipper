@@ -2,7 +2,6 @@ package chipper
 
 import (
 	"fmt"
-	"time"
 )
 
 type Instruction struct {
@@ -20,16 +19,24 @@ func (instr Instruction) String() string {
 	)
 }
 
+type InstructionNotImplementedError struct {
+	op Opcode
+}
+
+func (e InstructionNotImplementedError) Error() string {
+	return fmt.Sprintf("instruction not implemented: '%s'", e.op)
+}
+
 func (emu *Emulator) Execute(instr Instruction) error {
 	args := instr.Operands
 
 	switch instr.Op {
 	default:
-		fmt.Println("unimplemented")
 		return nil //	return fmt.Errorf("bad instruction: %v", instr)
 
 	case ExecNNN:
-		return nil
+		return InstructionNotImplementedError{instr.Op}
+
 	case Clear:
 		return emu.clearScreen()
 
@@ -616,24 +623,26 @@ func (emu *Emulator) waitForKeyAndStoreInX(x int) error {
 		return err
 	}
 
-	l := Listener{
-		EventType: "KeyEvent",
-		ID:        "waitForKeyAndStoreInX",
-		ch:        make(chan Event, 1),
-	}
+	return InstructionNotImplementedError{WaitForKeyAndStoreInX}
 
-	emu.listeners.Add(l)
-	ev := <-l.ch
-	emu.listeners.Del(l.ID)
-
-	for {
-		for k, key := range emu.Keys {
-			if key {
-				emu.V[x] = byte(k)
-				return nil
-			}
-		}
-	}
+	// l := Listener{
+	// 	EventType: "KeyEvent",
+	// 	ID:        "waitForKeyAndStoreInX",
+	// 	ch:        make(chan Event, 1),
+	// }
+	//
+	// emu.listeners.Add(l)
+	// // ev := <-l.ch
+	// emu.listeners.Del(l.ID)
+	//
+	// for {
+	// 	for k, key := range emu.Keys {
+	// 		if key {
+	// 			emu.V[x] = byte(k)
+	// 			return nil
+	// 		}
+	// 	}
+	// }
 }
 
 func (emu *Emulator) setDTToX(x int) error {
