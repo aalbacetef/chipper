@@ -8,6 +8,17 @@ import (
 
 type Color byte
 
+func (c Color) String() string {
+	switch c {
+	case ColorBlack:
+		return "ColorBlack"
+	case ColorWhite:
+		return "ColorWhite"
+	default:
+		return fmt.Sprintf("%0#x", c)
+	}
+}
+
 const (
 	ColorBlack Color = 0
 	ColorWhite Color = 1
@@ -35,9 +46,9 @@ func (d *Display) String() string {
 	for y := 0; y < rows; y++ {
 		fmt.Fprintf(b, " %2d |", y)
 		for x := 0; x < cols; x++ {
-			c := "."
+			c := " ."
 			if d.At(x, y) == ColorWhite {
-				c = "+"
+				c = " o"
 			}
 
 			fmt.Fprintf(b, "%s", c)
@@ -108,7 +119,7 @@ func loadSprites(emu *Emulator) error {
 		0xF0, 0x80, 0xF0, 0x80, 0x80, // F
 	}
 
-	copy(data, emu.RAM)
+	copy(emu.RAM, data)
 
 	return nil
 }
