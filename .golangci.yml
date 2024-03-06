@@ -84,7 +84,7 @@ linters-settings:
     match-constant: true 
    
   godot:
-    scope: all
+    scope: declarations
     exclude: []
     period: true
     capital: true
@@ -168,6 +168,8 @@ linters-settings:
       - c
       - l
       - ch
+      - w
+      - h    
     ignore-decls:
       - c echo.Context
       - t *testing.T
@@ -184,7 +186,15 @@ linters-settings:
       - p []byte
       - n int
       - wc io.WriteCloser
-
+      - b *strings.Builder
+      - x int 
+      - y int
+      - dx int 
+      - dy int 
+      - p []int
+      - pc int
+      - tw *tabwriter.Writer
+      - d *Display
 
 
 linters:
