@@ -1,0 +1,268 @@
+# output configuration options
+output:
+  format: colored-line-number
+  print-issued-lines: true
+  print-linter-name: true
+  uniq-by-line: true
+  path-prefix: ""
+  sort-results: false
+
+
+linters-settings:
+  cyclop:
+    max-complexity: 20
+    package-average: 5
+    skip-tests: true
+
+  depguard:
+    rules:
+      main:
+        allow:
+          - github.com/aalbacetef
+        deny: []
+  
+  dogsled:
+    max-blank-identifiers: 3
+
+  dupl:
+    threshold: 100
+
+  dupword:
+    keywords: []
+  
+  errcheck:
+    check-type-assertions: true
+
+    check-blank: true
+
+    # [deprecated] comma-separated list of pairs of the form pkg:regex
+    # the regex is used to ignore names within pkg. (default "fmt:.*").
+    # see https://github.com/kisielk/errcheck#the-deprecated-method for details
+    ignore: fmt:.*,io/ioutil:^Read.*
+
+  errorlint:
+    errorf: true
+    errorf-multi: true
+    asserts: true
+    comparison: true
+
+  exhaustive:
+    check:
+      - switch
+      - map
+    check-generated: true
+    default-signifies-exhaustive: true
+    ignore-enum-members: "Example.+"
+    ignore-enum-types: "Example.+"
+    explicit-exhaustive-map: true
+
+  exhaustruct:
+    include: []
+    exclude: []
+
+
+  funlen:
+    lines: 60
+    statements: 40
+    ignore-comments: true
+  
+  gci:
+    sections:
+      - standard
+      - default 
+      - prefix(github.com/aalbacetef)
+    skip-generated: false
+    custom-order: true
+
+  gocognit:
+    min-complexity: 15
+
+  goconst:
+    min-len: 3
+    min-occurrences: 3 
+    ignore-tests: true 
+    match-constant: true 
+   
+  godot:
+    scope: declarations
+    exclude: []
+    period: true
+    capital: true
+
+  gomnd:
+    settings:
+      mnd:
+        checks: argument,case,condition,operation,return,assign
+        # ignored-numbers: 1000
+        # ignored-files: magic_.*.go
+        # ignored-functions: math.*    
+
+
+  gosec:
+    includes: []
+    excludes: 
+      # TLS InsecureSkipVerify set to true 
+      # we ignore this one because we're implementing TOFU 
+      # ourselves.
+      - 'G402' 
+      # Blocklisted import md5 and use of weak primitive 
+      # we ignore these because md5 is faster and aiming to 
+      # fully encrypt the user's known_hosts file is not the 
+      # aim of the package.
+      - 'G401' 
+      - 'G501' 
+    
+    exclude-generated: false 
+    severity: low 
+    confidence: low 
+    concurrency: 2
+
+
+  govet:
+    check-shadowing: true
+    enable-all: true
+    settings:
+      # analyzer name, run `go tool vet help` to see all analyzers
+      printf: 
+        # run `go tool vet help printf` to see available settings for `printf` analyzer
+        funcs: 
+          - (github.com/golangci/golangci-lint/pkg/logutils.Log).Infof
+          - (github.com/golangci/golangci-lint/pkg/logutils.Log).Warnf
+          - (github.com/golangci/golangci-lint/pkg/logutils.Log).Errorf
+          - (github.com/golangci/golangci-lint/pkg/logutils.Log).Fatalf
+
+  interfacebloat:
+    max: 5
+ 
+  ireturn:
+    allow: "error,stdlib"
+
+  lll:
+    line-length: 120
+    tab-width: 1
+
+  maintidx:
+    under: 20
+
+  misspell: 
+    locale: US
+    ignore-words: []
+
+  nakedret:
+    max-func-lines: 20
+
+  nestif:
+    min-complexity: 3
+
+  varnamelen:
+    max-distance: 6
+    min-name-length: 3
+    check-receiver: false
+    check-return: false
+    check-type-param: false
+    ignore-type-assert-ok: false
+    ignore-map-index-ok: false
+    ignore-chan-recv-ok: false
+    ignore-names:
+      - err
+      - c
+      - l
+      - ch
+      - w
+      - h    
+    ignore-decls:
+      - c echo.Context
+      - t *testing.T
+      - tt *testing.T 
+      - f *foo.Bar
+      - e error
+      - k int
+      - const C
+      - T any
+      - m map[string]int
+      - r io.Reader
+      - w io.Writer
+      - fd *os.File
+      - p []byte
+      - n int
+      - wc io.WriteCloser
+      - b *strings.Builder
+      - x int 
+      - y int
+      - dx int 
+      - dy int 
+      - p []int
+      - pc int
+      - tw *tabwriter.Writer
+      - d *Display
+
+
+linters:
+  disable-all: true
+  enable:
+    - asasalint
+    - bidichk
+    - bodyclose
+    - containedctx
+    - contextcheck
+    - cyclop
+    - decorder
+    - dogsled
+    - dupl
+    - dupword
+    - durationcheck
+    - errcheck
+    - errname
+    - errorlint
+    - exhaustive
+    - forcetypeassert
+    - funlen
+    - gci
+    - gochecknoglobals
+    - gochecknoinits
+    - gocognit
+    - goconst
+    - godot
+    - gomnd
+    - gosimple
+    - gosec
+    - govet
+    - grouper
+    - ineffassign
+    - interfacebloat
+    - ireturn
+    - lll
+    - maintidx 
+    - misspell
+    - nakedret
+    - nestif
+    - nilnil
+    - nlreturn
+    - nolintlint
+    - nonamedreturns
+    - prealloc
+    - predeclared
+    - reassign
+    - revive
+    - staticcheck
+    - stylecheck
+    - tagalign
+    - tagliatelle
+    - thelper
+    - typecheck
+    - unconvert
+    - unused
+    - usestdlibvars
+    - unparam
+    - varnamelen
+    - whitespace
+    - wrapcheck
+    - wsl
+
+
+issues:
+  max-issues-per-linter: 0
+  max-same-issues: 0
+  new: false
+  fix: false
+
