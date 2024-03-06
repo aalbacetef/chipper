@@ -9,7 +9,7 @@ import (
 	"os"
 	"time"
 
-	"gitlab.com/aalbacetef/chipper"
+	"github.com/aalbacetef/chipper"
 )
 
 const (

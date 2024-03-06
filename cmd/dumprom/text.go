@@ -7,7 +7,7 @@ import (
 	"strings"
 	"text/tabwriter"
 
-	"gitlab.com/aalbacetef/chipper"
+	"github.com/aalbacetef/chipper"
 )
 
 func toHumanReadable(r io.Reader) error {
