@@ -37,14 +37,17 @@ func (d *Display) String() string {
 
 	top := &strings.Builder{}
 	top.WriteString("     ")
+
 	for k := 0; k < cols; k++ {
 		fmt.Fprintf(top, "-")
 	}
 
 	b.WriteString(top.String())
 	fmt.Fprintf(b, "\n")
+
 	for y := 0; y < rows; y++ {
 		fmt.Fprintf(b, " %2d |", y)
+
 		for x := 0; x < cols; x++ {
 			c := " ."
 			if d.At(x, y) == ColorWhite {
@@ -55,7 +58,9 @@ func (d *Display) String() string {
 		}
 		fmt.Fprintf(b, "|\n")
 	}
+
 	b.WriteString(top.String())
+
 	return b.String()
 }
 
@@ -99,7 +104,7 @@ func (d *Display) Set(x, y int, c Color) error {
 	return nil
 }
 
-func loadSprites(emu *Emulator) error {
+func loadSprites(emu *Emulator) error { //nolint: unparam
 	data := []byte{
 		0xF0, 0x90, 0x90, 0x90, 0xF0, // 0
 		0x20, 0x60, 0x20, 0x20, 0x70, // 1
