@@ -7,8 +7,9 @@ import (
 	"strings"
 	"text/tabwriter"
 
-	"github.com/aalbacetef/chipper"
 	"golang.org/x/exp/slices"
+
+	"github.com/aalbacetef/chipper"
 )
 
 func dumpInstructions(r io.Reader) error {
