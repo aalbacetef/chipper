@@ -205,6 +205,7 @@ func (emu *Emulator) Load(r io.Reader) error {
 	if err != nil {
 		return fmt.Errorf("error reading ROM: %w", err)
 	}
+
 	p = p[:bytesRead]
 
 	for k, b := range p {
