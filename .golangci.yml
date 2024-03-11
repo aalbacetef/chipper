@@ -121,6 +121,8 @@ linters-settings:
   govet:
     check-shadowing: true
     enable-all: true
+    disable:
+      - fieldalignment
     settings:
       # analyzer name, run `go tool vet help` to see all analyzers
       printf: 
