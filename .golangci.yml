@@ -93,7 +93,13 @@ linters-settings:
     settings:
       mnd:
         checks: argument,case,condition,operation,return,assign
-        # ignored-numbers: 1000
+        ignored-numbers:
+          - 0
+          - 1
+          - 2
+          - 4
+          - 8
+          - 10
         # ignored-files: magic_.*.go
         # ignored-functions: math.*    
 
@@ -197,6 +203,9 @@ linters-settings:
       - pc int
       - tw *tabwriter.Writer
       - d *Display
+      - v int
+      - r io.Reader
+      - r *bytes.Reader
 
 
 linters:
