@@ -94,10 +94,12 @@ linters-settings:
       mnd:
         checks: argument,case,condition,operation,return,assign
         ignored-numbers:
+          - '0x1'
           - 0
           - 1
           - 2
           - 4
+          - 7
           - 8
           - 10
         # ignored-files: magic_.*.go
@@ -206,6 +208,7 @@ linters-settings:
       - v int
       - r io.Reader
       - r *bytes.Reader
+      - vx byte
 
 
 linters:
