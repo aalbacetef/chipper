@@ -70,6 +70,7 @@ func (ls *Listeners) Del(id string) {
 
 		listeners = append(listeners, l)
 	}
+
 	ls.listeners = listeners
 }
 
@@ -85,6 +86,7 @@ type Event struct{}
 func (emu *Emulator) RegisterEventSource(src <-chan Event) {
 	ctx, cancel := context.WithCancel(context.Background())
 	emu.cancelFns = append(emu.cancelFns, cancel)
+
 	go func() {
 		for {
 			select {
@@ -139,14 +141,12 @@ func NewEmulator(stackSize, ramSize, w, h int) (*Emulator, error) {
 
 // Tick .
 func (emu *Emulator) Tick() error {
-	// pc := emu.PC
-
-	// fetch
 	instrBytes, err := emu.Fetch(InstructionSize)
+	if errors.Is(err, io.EOF) {
+		return fmt.Errorf("reached last instruction: %w", io.EOF)
+	}
+
 	if err != nil {
-		if errors.Is(err, io.EOF) {
-			return fmt.Errorf("reached last instruction: %w", io.EOF)
-		}
 		return fmt.Errorf("error fetching instruction: %w", err)
 	}
 
