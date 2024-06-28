@@ -160,11 +160,8 @@ func (emu *Emulator) Tick() error {
 	}
 
 	// execute
-	fmt.Println("instruction: ", instr)
-
 	execErr := emu.Execute(instr)
 	if execErr != nil {
-		//fmt.Println("execution error: ", execErr)
 		return execErr
 	}
 
