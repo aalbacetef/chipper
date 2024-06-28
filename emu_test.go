@@ -4,64 +4,77 @@ import (
 	"bytes"
 	_ "embed"
 	"fmt"
-	"os"
+	// "os"
 	"strings"
 	"testing"
-	"time"
 )
 
 //go:embed testdata/zero-demo-2007.ch8
 var testZero []byte
 
+//go:embed testdata/zero.golden.txt
+var testZeroGolden []byte
+
 //go:embed testdata/particle-demo-zero-2008.ch8
 var testParticle []byte
+
+//go:embed testdata/particle.golden.txt
+var testParticleGolden []byte
 
 //go:embed testdata/maze-alt-david-winter-199x.ch8
 var testMaze []byte
 
+//go:embed testdata/maze.golden.txt
+var testMazeGolden []byte
+
 func TestEmulator(t *testing.T) {
-	const (
-		testStackSize = 16
-		testRamSize   = 4096
-		testW         = 64
-		testH         = 32
-		testDelay     = 500 * time.Millisecond
-	)
-
-	testRom := testMaze
-	if readFile := os.Getenv("EMU_ROM_PATH"); readFile != "" {
-		data, err := os.ReadFile(readFile)
-		if err != nil {
-			t.Fatalf("could not read file(%s): %v", readFile, err)
-		}
-
-		testRom = data
+	cases := []struct {
+		label  string
+		rom    []byte
+		golden []byte
+	}{
+		// {"zero", testZero, testZeroGolden},
+		{"particle", testParticle, testParticleGolden},
+		{"maze", testMaze, testMazeGolden},
 	}
 
-	emu, err := NewEmulator(testStackSize, testRamSize, testW, testH)
+	for _, c := range cases {
+		t.Run(c.label, func(t *testing.T) {
+			testROM(t, c.rom, c.golden)
+		})
+	}
+}
+
+func testROM(t *testing.T, rom []byte, golden []byte) {
+	t.Helper()
+
+	const (
+		testStackSize = 16
+		testRAMSize   = 4096
+		testW         = 64
+		testH         = 32
+		testMaxCount  = 200
+	)
+
+	emu, err := NewEmulator(testStackSize, testRAMSize, testW, testH)
 	if err != nil {
 		t.Fatalf("could not create emulator: %v", err)
 	}
 
-	r := bytes.NewReader(testRom)
+	r := bytes.NewReader(rom)
 	if err := emu.Load(r); err != nil {
 		t.Fatalf("could not load rom: %v", err)
 	}
 
-	for {
+	b := &strings.Builder{}
+
+	for count := 0; count < testMaxCount; count++ {
 		tickErr := emu.Tick()
 		if tickErr != nil {
 			t.Logf("error from Tick: %v", tickErr)
+			break
 		}
 
-		if testDelay > 0 {
-			time.Sleep(testDelay)
-		}
-
-		fmt.Printf("PC: %0#4x\n", emu.PC)
-		fmt.Println("Stack: ", emu.Stack.String())
-		fmt.Println("->")
-		b := &strings.Builder{}
 		for k, v := range emu.V {
 			fmt.Fprintf(
 				b,
@@ -69,9 +82,23 @@ func TestEmulator(t *testing.T) {
 				k, v,
 			)
 		}
-		fmt.Println(b.String())
-		fmt.Println(emu.Display.String())
-		fmt.Println("---------------")
+	}
 
+	data := []byte(b.String())
+	// os.WriteFile("maze", data, 0o644)
+	n := len(data)
+	m := len(golden)
+
+	if m != n {
+		t.Fatalf("expected size %d, got %d", m, n)
+	}
+
+	for k := 0; k < n; k++ {
+		want := golden[k]
+		got := data[k]
+
+		if want != got {
+			t.Fatalf("mismatch at %d, want %#0X, got %#0X", k, want, got)
+		}
 	}
 }
