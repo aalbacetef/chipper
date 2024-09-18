@@ -665,8 +665,9 @@ func (emu *Emulator) setIToMemAddrOfSpriteInX(x int) error {
 		return err
 	}
 
-	c := int(emu.V[x]) * 5 //nolint:gomnd
-	emu.Index = uint16(c)
+	const width = 5
+
+	emu.Index = uint16(emu.V[x]) * width
 
 	return nil
 }
