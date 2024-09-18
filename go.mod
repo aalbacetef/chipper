@@ -1,4 +1,4 @@
-module gitlab.com/aalbacetef/chipper
+module github.com/aalbacetef/chipper
 
 go 1.21.0
 

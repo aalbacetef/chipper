@@ -10,12 +10,14 @@ import (
 )
 
 func ToAddr3(p []int) (uint16, error) {
+	const argCount = 3
+
 	n := len(p)
-	if n != 3 {
-		return 0, fmt.Errorf("expected 3 values, got %d", n)
+	if n != argCount {
+		return 0, ArgCountError{want: argCount, got: n}
 	}
 
-	addr := uint16(p[0])<<(8) | uint16(p[1])<<4 | uint16(p[2])
+	addr := uint16(p[0])<<(8) | uint16(p[1])<<4 | uint16(p[2]) //nolint:gosec
 
 	return addr, nil
 }
@@ -37,8 +39,8 @@ func isInBounds(n, index int) error {
 
 func ToByte(p []int) (byte, error) {
 	want := 2
-	got := len(p)
 
+	got := len(p)
 	if got != want {
 		return 0, fmt.Errorf("expected %d values, got %d", want, got)
 	}
@@ -49,12 +51,18 @@ func ToByte(p []int) (byte, error) {
 }
 
 func randomNum() byte {
-	return byte(rand.Intn(256))
+	//nolint
+	return byte(rand.Intn(max8BitVal + 1))
 }
 
+const (
+	max8BitVal = 0xFF
+	decimal    = 10
+)
+
 func bcdOfInt(v int) ([]byte, error) {
-	if v > 0xFF {
-		return nil, fmt.Errorf("int (%d) exceeds max value %d", v, 0xFF)
+	if v > max8BitVal {
+		return nil, fmt.Errorf("int (%d) exceeds max value %d", v, max8BitVal)
 	}
 
 	const n = 3
@@ -67,25 +75,36 @@ func bcdOfInt(v int) ([]byte, error) {
 	}
 
 	return p, nil
-
 }
 
 func DumpEmu(emu *Emulator) {
 	p := make([]byte, 2)
 	copy(p, emu.RAM[emu.PC:emu.PC+2])
 
-	instr, _ := Decode(p)
+	instr, err := Decode(p)
+	if err != nil {
+		fmt.Println("could not decode instruction: ", err)
+
+		return
+	}
 
 	cmd := exec.Command("clear")
 	cmd.Stdout = os.Stdout
-	cmd.Run()
+
+	if err := cmd.Run(); err != nil {
+		fmt.Println("could not clear console: ", err)
+
+		return
+	}
 
 	fmt.Println("instruction: ", instr)
 	fmt.Printf("PC: %0#4x\n", emu.PC)
 	fmt.Printf("I: %0#4x\n", emu.Index)
 	fmt.Println("Stack: ", emu.Stack.String())
 	fmt.Println("->")
+
 	b := &strings.Builder{}
+
 	for k, v := range emu.V {
 		fmt.Fprintf(
 			b,
@@ -93,6 +112,7 @@ func DumpEmu(emu *Emulator) {
 			k, v,
 		)
 	}
+
 	fmt.Print(b.String())
 	fmt.Println(emu.Display.String())
 }

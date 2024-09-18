@@ -27,7 +27,7 @@ func (e InstructionNotImplementedError) Error() string {
 	return fmt.Sprintf("instruction not implemented: '%s'", e.op)
 }
 
-func (emu *Emulator) Execute(instr Instruction) error {
+func (emu *Emulator) Execute(instr Instruction) error { //nolint: funlen,cyclop
 	args := instr.Operands
 
 	switch instr.Op {
@@ -200,6 +200,7 @@ func (emu *Emulator) skipIfXEqNN(x int, args []int) error {
 	}
 
 	vx := emu.V[x]
+
 	value, err := ToByte(args)
 	if err != nil {
 		return err
@@ -219,6 +220,7 @@ func (emu *Emulator) skipIfXNotEqNN(x int, args []int) error {
 	}
 
 	vx := emu.V[x]
+
 	value, err := ToByte(args)
 	if err != nil {
 		return err
@@ -342,6 +344,8 @@ func (emu *Emulator) setXToXXORY(x, y int) error {
 	return nil
 }
 
+const wrapValue = max8BitVal + 1
+
 // addYToX will add VY to VX, setting VF if it overflows.
 func (emu *Emulator) addYToX(x, y int) error {
 	if err := isInBounds(RegisterCount, x); err != nil {
@@ -353,12 +357,12 @@ func (emu *Emulator) addYToX(x, y int) error {
 	}
 
 	val := int(emu.V[x]) + int(emu.V[y])
-	if val > 0xFF {
+	if val > max8BitVal {
 		emu.V[0xF] = 1
 	}
 
 	// note: the typecase is enough, but I prefer to be explicit
-	emu.V[x] = byte(val % 0x100)
+	emu.V[x] = byte(val % wrapValue)
 
 	return nil
 }
@@ -381,7 +385,7 @@ func (emu *Emulator) subYFromX(x, y int) error {
 		clearOnBorrow = 0
 	}
 
-	emu.V[x] = byte(val % 0x100)
+	emu.V[x] = byte(val % wrapValue)
 	emu.V[0xF] = byte(clearOnBorrow)
 
 	return nil
@@ -419,13 +423,14 @@ func (emu *Emulator) setXToYMinusX(x, y int) error {
 
 	vx, vy := emu.V[x], emu.V[y]
 	val := int(vy) - int(vx)
+
 	clearOnBorrow := 1
 	if val < 0 {
 		clearOnBorrow = 0
 	}
 
 	emu.V[0xF] = byte(clearOnBorrow)
-	emu.V[x] = byte(val % 0x100)
+	emu.V[x] = byte(val % wrapValue)
 
 	return nil
 }
@@ -537,41 +542,21 @@ func (emu *Emulator) drawSpriteInXY(x, y, n int) error {
 		pixels := emu.RAM[addr]
 
 		for xline := 0; xline < 8; xline++ {
-			v := (pixels >> (7 - xline)) & 1
+			value := (pixels >> (7 - xline)) & 1
 
 			xpos := (posx + xline) % dx
 			ypos := (posy + yline) % dx
 			at := emu.Display.At(xpos, ypos)
 
-			newPix := v ^ byte(at)
-			if Color(v) == at {
+			newPix := value ^ byte(at)
+
+			if Color(value) == at {
 				emu.V[0xF] = 1
 			}
 
 			if err := emu.Display.Set(xpos, ypos, Color(newPix)); err != nil {
 				return fmt.Errorf("could not set (%d, %d, %s): %w", xpos, ypos, Color(newPix), err)
 			}
-			// mask := byte(0b10000000 >> xline)
-			// val := (pixels & mask)
-			// if val == byte(ColorBlack) {
-			// 	continue
-			// }
-			//
-			// c := Color(val)
-			//
-			// xpos := (posx + xline) % dx
-			// ypos := (posy + yline) % dy
-			//
-			// pix := emu.Display.At(xpos, ypos)
-			//
-			// if pix == ColorWhite && pix == c {
-			// 	emu.V[0xF] = 1
-			// 	c = ColorBlack
-			// }
-			//
-			// if err := emu.Display.Set(xpos, ypos, c); err != nil {
-			// 	return fmt.Errorf("could not set (%d, %d): %w", xpos, ypos, err)
-			// }
 		}
 
 		if (posy + yline) >= dy {
@@ -623,8 +608,6 @@ func (emu *Emulator) waitForKeyAndStoreInX(x int) error {
 		return err
 	}
 
-	return InstructionNotImplementedError{WaitForKeyAndStoreInX}
-
 	// l := Listener{
 	// 	EventType: "KeyEvent",
 	// 	ID:        "waitForKeyAndStoreInX",
@@ -643,6 +626,8 @@ func (emu *Emulator) waitForKeyAndStoreInX(x int) error {
 	// 		}
 	// 	}
 	// }
+
+	return InstructionNotImplementedError{WaitForKeyAndStoreInX}
 }
 
 func (emu *Emulator) setDTToX(x int) error {
@@ -680,8 +665,9 @@ func (emu *Emulator) setIToMemAddrOfSpriteInX(x int) error {
 		return err
 	}
 
-	c := int(emu.V[x]) * 5
-	emu.Index = uint16(c)
+	const width = 5
+
+	emu.Index = uint16(emu.V[x]) * width
 
 	return nil
 }
@@ -692,12 +678,14 @@ func (emu *Emulator) storeBCDOfXInI(x int) error {
 	}
 
 	val := emu.V[x]
+
 	bcd, err := bcdOfInt(int(val))
 	if err != nil {
 		return err
 	}
 
 	addr := int(emu.Index)
+
 	for k, p := range bcd {
 		emu.RAM[addr+k] = p
 	}
@@ -711,6 +699,7 @@ func (emu *Emulator) store0ToXInI(x int) error {
 	}
 
 	addr := int(emu.Index)
+
 	for k, p := range emu.V[:x] {
 		emu.RAM[addr+k] = p
 	}

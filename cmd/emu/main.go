@@ -9,7 +9,7 @@ import (
 	"os"
 	"time"
 
-	"gitlab.com/aalbacetef/chipper"
+	"github.com/aalbacetef/chipper"
 )
 
 const (
@@ -31,6 +31,7 @@ func main() {
 
 	if fname == "" {
 		flag.Usage()
+
 		return
 	}
 
@@ -39,8 +40,10 @@ func main() {
 	data, err := os.ReadFile(fname)
 	if err != nil {
 		fmt.Println("could not open file: ", err)
+
 		return
 	}
+
 	r := bytes.NewReader(data)
 
 	emu, err := chipper.NewEmulator(
@@ -54,18 +57,24 @@ func main() {
 
 	if err := emu.Load(r); err != nil {
 		fmt.Println("could not load ROM: ", err)
+
 		return
 	}
 
+	if err := runUntilError(emu, delay); err != nil {
+		fmt.Println("error: ", err)
+	}
+}
+
+func runUntilError(emu *chipper.Emulator, delay time.Duration) error {
 	for {
 		err := emu.Tick()
+		if errors.Is(err, io.EOF) {
+			return nil
+		}
+
 		if err != nil {
-			if errors.Is(err, io.EOF) {
-				fmt.Println("END")
-				return
-			}
-			fmt.Println("ERROR: ", err)
-			continue
+			return fmt.Errorf("runUntilError: %w", err)
 		}
 
 		time.Sleep(delay)

@@ -1,16 +1,19 @@
 all: build-emu build-dumprom 
 
+fmt:
+	goimports -w .
+
 mk-bin-dir:
 	mkdir -p ./bin/ 
 
-build-emu: mk-bin-dir
+build-emu: fmt mk-bin-dir
 	go build -o bin/ ./cmd/emu/ 
 
-build-dumprom: mk-bin-dir
+build-dumprom: fmt mk-bin-dir
 	go build -o bin/ ./cmd/dumprom/
 
-test: 
+test: fmt
 	go test -v ./...
 
-lint:
+lint: fmt
 	golangci-lint run 

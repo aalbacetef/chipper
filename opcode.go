@@ -46,10 +46,11 @@ const (
 
 // DetermineOpcode will return the appropriate Opcode given the digits passed in.
 // It expects digits to have length 4.
-func DetermineOpcode(digits []int) Opcode {
+func DetermineOpcode(digits []int) Opcode { //nolint: funlen,gocognit,cyclop
 	first := digits[0]
 	last := digits[3]
 
+	//nolint:gomnd
 	switch first {
 	case 0:
 		if match(digits[1:], []int{0, 0, 0}) {
@@ -204,10 +205,10 @@ func match(in, out []int) bool {
 func Decode(p []byte) (Instruction, error) {
 	instr := toUint16(p)
 
-	d0 := (instr & 0xF000) >> (3 * 4)
-	d1 := (instr & 0x0F00) >> (2 * 4)
-	d2 := (instr & 0x00F0) >> (1 * 4)
-	d3 := (instr & 0x000F)
+	d0 := (instr & 0xF000) >> (3 * 4) //nolint:gomnd
+	d1 := (instr & 0x0F00) >> (2 * 4) //nolint:gomnd
+	d2 := (instr & 0x00F0) >> (1 * 4) //nolint:gomnd
+	d3 := (instr & 0x000F)            //nolint:gomnd
 
 	digits := [4]int{
 		int(d0), int(d1), int(d2), int(d3),

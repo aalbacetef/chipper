@@ -1,6 +1,6 @@
 # output configuration options
 output:
-  format: colored-line-number
+  formats: colored-line-number
   print-issued-lines: true
   print-linter-name: true
   uniq-by-line: true
@@ -90,28 +90,21 @@ linters-settings:
     capital: true
 
   gomnd:
-    settings:
-      mnd:
-        checks: argument,case,condition,operation,return,assign
-        # ignored-numbers: 1000
-        # ignored-files: magic_.*.go
-        # ignored-functions: math.*    
+    checks: argument,case,condition,operation,return,assign
+    ignored-numbers:
+      - '0x1'
+      - 0
+      - 1
+      - 2
+      - 4
+      - 7
+      - 8
+      - 10
+    # ignored-files: magic_.*.go
+    # ignored-functions: math.*    
 
 
   gosec:
-    includes: []
-    excludes: 
-      # TLS InsecureSkipVerify set to true 
-      # we ignore this one because we're implementing TOFU 
-      # ourselves.
-      - 'G402' 
-      # Blocklisted import md5 and use of weak primitive 
-      # we ignore these because md5 is faster and aiming to 
-      # fully encrypt the user's known_hosts file is not the 
-      # aim of the package.
-      - 'G401' 
-      - 'G501' 
-    
     exclude-generated: false 
     severity: low 
     confidence: low 
@@ -119,8 +112,9 @@ linters-settings:
 
 
   govet:
-    check-shadowing: true
     enable-all: true
+    disable:
+      - fieldalignment
     settings:
       # analyzer name, run `go tool vet help` to see all analyzers
       printf: 
@@ -195,6 +189,10 @@ linters-settings:
       - pc int
       - tw *tabwriter.Writer
       - d *Display
+      - v int
+      - r io.Reader
+      - r *bytes.Reader
+      - vx byte
 
 
 linters:
