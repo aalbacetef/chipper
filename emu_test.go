@@ -85,7 +85,6 @@ func testROM(t *testing.T, rom []byte, golden []byte) {
 	}
 
 	data := []byte(b.String())
-	// os.WriteFile("maze", data, 0o644)
 	n := len(data)
 	m := len(golden)
 
