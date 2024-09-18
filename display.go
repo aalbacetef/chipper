@@ -38,7 +38,7 @@ func (d *Display) String() string {
 	top := &strings.Builder{}
 	top.WriteString("     ")
 
-	for k := 0; k < cols; k++ {
+	for k := 0; k < cols*2; k++ {
 		fmt.Fprintf(top, "-")
 	}
 
