@@ -17,7 +17,7 @@ func ToAddr3(p []int) (uint16, error) {
 		return 0, ArgCountError{want: argCount, got: n}
 	}
 
-	addr := uint16(p[0])<<(8) | uint16(p[1])<<4 | uint16(p[2])
+	addr := uint16(p[0])<<(8) | uint16(p[1])<<4 | uint16(p[2]) //nolint:gosec
 
 	return addr, nil
 }
