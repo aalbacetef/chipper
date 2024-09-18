@@ -4,7 +4,6 @@ import (
 	"bytes"
 	_ "embed"
 	"fmt"
-	// "os"
 	"strings"
 	"testing"
 )
@@ -33,7 +32,7 @@ func TestEmulator(t *testing.T) {
 		rom    []byte
 		golden []byte
 	}{
-		// {"zero", testZero, testZeroGolden},
+		{"zero", testZero, testZeroGolden},
 		{"particle", testParticle, testParticleGolden},
 		{"maze", testMaze, testMazeGolden},
 	}
@@ -72,6 +71,7 @@ func testROM(t *testing.T, rom []byte, golden []byte) {
 		tickErr := emu.Tick()
 		if tickErr != nil {
 			t.Logf("error from Tick: %v", tickErr)
+
 			break
 		}
 
