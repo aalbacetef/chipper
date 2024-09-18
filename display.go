@@ -56,6 +56,7 @@ func (d *Display) String() string {
 
 			fmt.Fprintf(b, "%s", c)
 		}
+
 		fmt.Fprintf(b, "|\n")
 	}
 
