@@ -3,7 +3,8 @@ package chipper
 import (
 	"bytes"
 	_ "embed"
-	"fmt"
+	"errors"
+	"io"
 	"strings"
 	"testing"
 )
@@ -67,24 +68,40 @@ func testROM(t *testing.T, rom []byte, golden []byte) {
 
 	b := &strings.Builder{}
 
-	for count := 0; count < testMaxCount; count++ {
-		tickErr := emu.Tick()
-		if tickErr != nil {
-			t.Logf("error from Tick: %v", tickErr)
-
+	for {
+		raw, err := emu.Fetch(InstructionSize)
+		if errors.Is(err, io.EOF) {
 			break
 		}
 
-		for k, v := range emu.V {
-			fmt.Fprintf(
-				b,
-				"  (v%2d) %#0x\n",
-				k, v,
-			)
+		if err != nil {
+			t.Fatalf("error fetching instruction: %v", err)
 		}
+
+		emu.PC += InstructionSize
+
+		instr, err := Decode(raw)
+		if instr.Op == Unknown {
+			b.WriteString(instr.String() + "\n")
+
+			continue
+		}
+
+		if err != nil {
+			t.Logf("OP: %s", instr.Op)
+			t.Fatalf("error decoding instruction: %v", err)
+		}
+
+		b.WriteString(instr.String() + "\n")
 	}
 
 	data := []byte(b.String())
+	checkSlicesMatch(t, data, golden)
+}
+
+func checkSlicesMatch(t *testing.T, data, golden []byte) {
+	t.Helper()
+
 	n := len(data)
 	m := len(golden)
 
