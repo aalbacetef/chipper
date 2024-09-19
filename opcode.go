@@ -216,7 +216,7 @@ func Decode(p []byte) (Instruction, error) {
 
 	opcode := DetermineOpcode(digits[:])
 	if opcode == Unknown {
-		return Instruction{}, fmt.Errorf("unknown opcode: %#0x", instr)
+		return Instruction{Op: opcode, Operands: digits[1:]}, fmt.Errorf("unknown opcode: %#0x", instr)
 	}
 
 	return Instruction{
