@@ -4,7 +4,7 @@ import "testing"
 
 func TestDisplay(t *testing.T) { //nolint: gocognit
 	t.Run("should set", func(tt *testing.T) {
-		d, err := NewDisplay(5, 5)
+		d, err := NewDebugDisplay(5, 5)
 		if err != nil {
 			tt.Fatalf("could not create display: %v", err)
 		}
@@ -20,7 +20,7 @@ func TestDisplay(t *testing.T) { //nolint: gocognit
 	})
 
 	t.Run("simple display", func(tt *testing.T) {
-		d, err := NewDisplay(5, 5)
+		d, err := NewDebugDisplay(5, 5)
 		if err != nil {
 			tt.Fatalf("could not create: %v", err)
 		}

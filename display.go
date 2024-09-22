@@ -3,7 +3,18 @@ package chipper
 import (
 	"fmt"
 	"image"
+	"image/color"
+	"image/draw"
 	"strings"
+)
+
+type Display interface {
+	draw.Image
+}
+
+const (
+	ColorBlack Color = 0
+	ColorWhite Color = 1
 )
 
 type Color byte
@@ -19,18 +30,22 @@ func (c Color) String() string {
 	}
 }
 
-const (
-	ColorBlack Color = 0
-	ColorWhite Color = 1
-)
+func (c Color) RGBA() (uint32, uint32, uint32, uint32) {
+	switch c {
+	case ColorWhite:
+		return color.White.RGBA()
+	default:
+		return color.Black.RGBA()
+	}
+}
 
-type Display struct {
+type DebugDisplay struct {
 	width  int
 	height int
 	data   []Color // storage is in row-major order.
 }
 
-func (d *Display) String() string {
+func (d *DebugDisplay) String() string {
 	b := &strings.Builder{}
 	rows := d.height
 	cols := d.width
@@ -65,31 +80,31 @@ func (d *Display) String() string {
 	return b.String()
 }
 
-func (d Display) toIndex(x, y int) int {
+func (d DebugDisplay) toIndex(x, y int) int {
 	return x + (y * d.width)
 }
 
-func (d *Display) Bounds() image.Rectangle {
+func (d *DebugDisplay) Bounds() image.Rectangle {
 	return image.Rect(0, 0, d.width, d.height)
 }
 
-func (d *Display) At(x, y int) Color {
+func (d *DebugDisplay) At(x, y int) Color {
 	return d.data[d.toIndex(x, y)]
 }
 
-func NewDisplay(w, h int) (*Display, error) {
+func NewDebugDisplay(w, h int) (*DebugDisplay, error) {
 	if w < 0 || h < 0 {
 		return nil, fmt.Errorf("width and height must be >= 0 (w=%d, h=%d)", w, h)
 	}
 
-	return &Display{
+	return &DebugDisplay{
 		width:  w,
 		height: h,
 		data:   make([]Color, w*h),
 	}, nil
 }
 
-func (d *Display) Set(x, y int, c Color) error {
+func (d *DebugDisplay) Set(x, y int, c Color) error {
 	point := image.Pt(x, y)
 	bounds := d.Bounds()
 

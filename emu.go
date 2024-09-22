@@ -25,7 +25,7 @@ type Emulator struct {
 	Keys       [NumKeys]bool
 	Stack      *Stack
 	RAM        []byte
-	Display    *Display
+	Display    *DebugDisplay
 	cancelFns  []context.CancelFunc
 	listeners  Listeners
 }
@@ -120,7 +120,7 @@ func NewEmulator(stackSize, ramSize, w, h int) (*Emulator, error) {
 		return nil, fmt.Errorf("could not create ram: %w", err)
 	}
 
-	display, err := NewDisplay(w, h)
+	display, err := NewDebugDisplay(w, h)
 	if err != nil {
 		return nil, fmt.Errorf("could not create display: %w", err)
 	}
