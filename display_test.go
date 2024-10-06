@@ -9,13 +9,13 @@ func TestDisplay(t *testing.T) { //nolint: gocognit
 			tt.Fatalf("could not create display: %v", err)
 		}
 
-		if err := d.Set(2, 1, ColorWhite); err != nil {
-			tt.Fatalf("could not set (%d, %d) to %#0x", 2, 1, ColorWhite)
+		if err := d.Set(2, 1, ColorSet); err != nil {
+			tt.Fatalf("could not set (%d, %d) to %#0x", 2, 1, ColorSet)
 		}
 
 		c := d.At(2, 1)
-		if c != ColorWhite {
-			tt.Fatalf("expected %#0x, got %#0x", ColorWhite, c)
+		if c != ColorSet {
+			tt.Fatalf("expected %#0x, got %#0x", ColorSet, c)
 		}
 	})
 

@@ -25,7 +25,7 @@ type Emulator struct {
 	Keys       [NumKeys]bool
 	Stack      *Stack
 	RAM        []byte
-	Display    *DebugDisplay
+	Display    Display
 	cancelFns  []context.CancelFunc
 	listeners  Listeners
 }

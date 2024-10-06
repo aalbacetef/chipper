@@ -147,7 +147,7 @@ func (emu *Emulator) clearScreen() error {
 
 	for x := 0; x < dx; x++ {
 		for y := 0; y < dy; y++ {
-			if err := emu.Display.Set(x, y, ColorBlack); err != nil {
+			if err := emu.Display.Set(x, y, ColorClear); err != nil {
 				return fmt.Errorf("could not clear pixel at (%d, %d): %w", x, y, err)
 			}
 		}

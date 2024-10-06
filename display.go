@@ -4,26 +4,46 @@ import (
 	"fmt"
 	"image"
 	"image/color"
-	"image/draw"
 	"strings"
 )
 
+// type Display interface {
+// 	draw.Image
+// }
+
 type Display interface {
-	draw.Image
+	fmt.Stringer
+	Bounds() image.Rectangle
+	Set(x, y int, c Color) error
+	At(x, y int) Color
+}
+
+func Each(d Display, fn func(int, int) error) error {
+	b := d.Bounds()
+
+	for x := b.Min.X; x < b.Max.X; x++ {
+		for y := b.Min.Y; y < b.Max.Y; y++ {
+			if err := fn(x, y); err != nil {
+				return err
+			}
+		}
+	}
+
+	return nil
 }
 
 const (
-	ColorBlack Color = 0
-	ColorWhite Color = 1
+	ColorClear Color = iota
+	ColorSet
 )
 
 type Color byte
 
 func (c Color) String() string {
 	switch c {
-	case ColorBlack:
+	case ColorClear:
 		return "ColorBlack"
-	case ColorWhite:
+	case ColorSet:
 		return "ColorWhite"
 	default:
 		return fmt.Sprintf("%0#x", c)
@@ -32,7 +52,7 @@ func (c Color) String() string {
 
 func (c Color) RGBA() (uint32, uint32, uint32, uint32) {
 	switch c {
-	case ColorWhite:
+	case ColorSet:
 		return color.White.RGBA()
 	default:
 		return color.Black.RGBA()
@@ -65,7 +85,7 @@ func (d *DebugDisplay) String() string {
 
 		for x := 0; x < cols; x++ {
 			c := " ."
-			if d.At(x, y) == ColorWhite {
+			if d.At(x, y) == ColorSet {
 				c = " o"
 			}
 
