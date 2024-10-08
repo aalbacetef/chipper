@@ -32,17 +32,21 @@ func TestInstruction(t *testing.T) {
 func testClearScreen(t *testing.T) {
 	emu := mkEmu(t)
 
-	Each(emu.Display, func(x, y int) error {
-		return emu.Display.Set(x, y, ColorSet)
+	colorSet := emu.Display.ColorSet()
+	_ = Each(emu.Display, func(x, y int) error {
+		emu.Display.Set(x, y, colorSet)
+
+		return nil
 	})
 
 	if err := emu.clearScreen(); err != nil {
 		t.Fatalf("error: %v", err)
 	}
 
-	Each(emu.Display, func(x, y int) error {
+	colorClear := emu.Display.ColorClear()
+	_ = Each(emu.Display, func(x, y int) error {
 		at := emu.Display.At(x, y)
-		if at.String() != ColorClear.String() {
+		if !ColorEq(at, colorClear) {
 			t.Fatalf("(%d, %d) not clear", x, y)
 		}
 
