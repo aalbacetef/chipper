@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { RouterLink, RouterView } from 'vue-router';
 
+
 </script>
 
 <template>
@@ -8,7 +9,7 @@ import { RouterLink, RouterView } from 'vue-router';
     <div class="wrapper">
       <nav>
         <RouterLink to="/">Home</RouterLink>
-     </nav>
+      </nav>
     </div>
   </header>
 
