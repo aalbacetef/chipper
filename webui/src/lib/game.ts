@@ -3,11 +3,14 @@ const w = 64;
 const h = 32;
 const delay = 180;
 
+
+// @TODO: reuse buffer instead of declaring a new one.
+// @TODO: run should probably be passed to request animation frame
+// @TODO: wrap get display calls in a buffer
 export function run(ctx: CanvasRenderingContext2D): void {
   const n = w * h;
   const buf = new Uint8Array(n);
   const copied = window.GetDisplay(buf);
-  // ctx.setTransform(1, 0, 0, 1, 0, 0);
 
   if (copied !== n) {
     console.log(`failed to copy bytes, want ${n}, got ${copied}`);
