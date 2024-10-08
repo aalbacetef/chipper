@@ -4,18 +4,15 @@ import (
 	"fmt"
 	"image"
 	"image/color"
+	"image/draw"
 	"strings"
 )
 
-// type Display interface {
-// 	draw.Image
-// }
-
 type Display interface {
 	fmt.Stringer
-	Bounds() image.Rectangle
-	Set(x, y int, c Color) error
-	At(x, y int) Color
+	draw.Image
+	ColorClear() color.Color
+	ColorSet() color.Color
 }
 
 func Each(d Display, fn func(int, int) error) error {
@@ -33,36 +30,23 @@ func Each(d Display, fn func(int, int) error) error {
 }
 
 const (
-	ColorClear Color = iota
+	ColorClear = iota
 	ColorSet
 )
 
-type Color byte
-
-func (c Color) String() string {
-	switch c {
-	case ColorClear:
-		return "ColorBlack"
-	case ColorSet:
-		return "ColorWhite"
-	default:
-		return fmt.Sprintf("%0#x", c)
-	}
-}
-
-func (c Color) RGBA() (uint32, uint32, uint32, uint32) {
-	switch c {
-	case ColorSet:
-		return color.White.RGBA()
-	default:
-		return color.Black.RGBA()
-	}
-}
-
 type DebugDisplay struct {
-	width  int
-	height int
-	data   []Color // storage is in row-major order.
+	width   int
+	height  int
+	data    []bool // storage is in row-major order.
+	palette color.Palette
+}
+
+func (d *DebugDisplay) ColorClear() color.Color {
+	return color.Black
+}
+
+func (d *DebugDisplay) ColorSet() color.Color {
+	return color.White
 }
 
 func (d *DebugDisplay) String() string {
@@ -85,7 +69,7 @@ func (d *DebugDisplay) String() string {
 
 		for x := 0; x < cols; x++ {
 			c := " ."
-			if d.At(x, y) == ColorSet {
+			if ColorEq(d.At(x, y), d.ColorSet()) {
 				c = " o"
 			}
 
@@ -108,8 +92,16 @@ func (d *DebugDisplay) Bounds() image.Rectangle {
 	return image.Rect(0, 0, d.width, d.height)
 }
 
-func (d *DebugDisplay) At(x, y int) Color {
-	return d.data[d.toIndex(x, y)]
+func (d *DebugDisplay) At(x, y int) color.Color {
+	if d.data[d.toIndex(x, y)] {
+		return d.ColorSet()
+	}
+
+	return d.ColorClear()
+}
+
+func (d *DebugDisplay) ColorModel() color.Model {
+	return d.palette
 }
 
 func NewDebugDisplay(w, h int) (*DebugDisplay, error) {
@@ -120,24 +112,50 @@ func NewDebugDisplay(w, h int) (*DebugDisplay, error) {
 	return &DebugDisplay{
 		width:  w,
 		height: h,
-		data:   make([]Color, w*h),
+		data:   make([]bool, w*h),
+		palette: []color.Color{
+			color.Black,
+			color.White,
+		},
 	}, nil
 }
 
-func (d *DebugDisplay) Set(x, y int, c Color) error {
+func (d *DebugDisplay) Set(x, y int, c color.Color) {
 	point := image.Pt(x, y)
 	bounds := d.Bounds()
 
 	if !point.In(bounds) {
-		return fmt.Errorf(
+		panic(fmt.Sprintf(
 			"out of bounds, point(%d, %d) not in rect(%d, %d)",
 			x, y, bounds.Dx(), bounds.Dy(),
-		)
+		))
 	}
 
-	d.data[d.toIndex(x, y)] = c
+	is := ColorEq(c, d.ColorSet())
+	d.data[d.toIndex(x, y)] = is
+}
 
-	return nil
+func ColorEq(c1, c2 color.Color) bool {
+	r1, g1, b1, a1 := c1.RGBA()
+	r2, g2, b2, a2 := c2.RGBA()
+
+	if r1 != r2 {
+		return false
+	}
+
+	if g1 != g2 {
+		return false
+	}
+
+	if b1 != b2 {
+		return false
+	}
+
+	if a1 != a2 {
+		return false
+	}
+
+	return true
 }
 
 func loadSprites(emu *Emulator) error { //nolint: unparam

@@ -9,12 +9,11 @@ func TestDisplay(t *testing.T) { //nolint: gocognit
 			tt.Fatalf("could not create display: %v", err)
 		}
 
-		if err := d.Set(2, 1, ColorSet); err != nil {
-			tt.Fatalf("could not set (%d, %d) to %#0x", 2, 1, ColorSet)
-		}
+		colorSet := d.ColorSet()
+		d.Set(2, 1, colorSet)
 
 		c := d.At(2, 1)
-		if c != ColorSet {
+		if !ColorEq(c, colorSet) {
 			tt.Fatalf("expected %#0x, got %#0x", ColorSet, c)
 		}
 	})
@@ -34,15 +33,14 @@ func TestDisplay(t *testing.T) { //nolint: gocognit
 			{3, 3},
 		}
 
+		colorSet := d.ColorSet()
 		for _, p := range points {
 			x := p[0]
 			y := p[1]
 
-			if err := d.Set(x, y, 1); err != nil {
-				tt.Fatalf("could not set (%d, %d): %v", x, y, err)
-			}
+			d.Set(x, y, colorSet)
 
-			if v := d.At(x, y); v != 1 {
+			if !ColorEq(d.At(x, y), colorSet) {
 				tt.Fatalf("point (%d, %d) was not set", x, y)
 			}
 		}
