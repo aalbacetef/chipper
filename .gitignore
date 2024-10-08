@@ -1,3 +1,4 @@
 /dumprom
 /emu
 /bin/
+*.wasm
