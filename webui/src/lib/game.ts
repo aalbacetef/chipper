@@ -5,11 +5,13 @@ const delay = 180;
 
 
 type CanvasContext = CanvasRenderingContext2D | OffscreenCanvasRenderingContext2D;
+type GetDisplayFunc = (buf: Uint8Array) => number;
 
 // @TODO: reuse buffer instead of declaring a new one.
 // @TODO: run should probably be passed to request animation frame
 // @TODO: wrap get display calls in a buffer
-export function run(ctx: CanvasContext, w: number, h: number, GetDisplay): void {
+// @TODO: flexible scale factor for different kinds of screens (e.g: mobile).
+export function run(ctx: CanvasContext, w: number, h: number, GetDisplay: GetDisplayFunc): void {
   const n = w * h;
   const buf = new Uint8Array(n);
   const copied = GetDisplay(buf);

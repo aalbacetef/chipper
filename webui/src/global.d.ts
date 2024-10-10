@@ -10,5 +10,5 @@ declare class Go {
 
 declare function StartEmu(): void;
 declare function LoadROM(): void;
-declare function GetDisplay(buf: Uint8Array): int;
+declare function GetDisplay(buf: Uint8Array): number;
 
