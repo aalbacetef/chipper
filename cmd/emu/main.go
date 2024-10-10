@@ -46,27 +46,41 @@ func main() {
 
 	r := bytes.NewReader(data)
 
-	emu, err := chipper.NewEmulator(
-		stackSize,
-		ramSize,
-		w, h,
-	)
+	emu, err := mkEmu(stackSize, ramSize, w, h)
 	if err != nil {
-		fmt.Println("error creating emulator: ", err)
-	}
-
-	if err := emu.Load(r); err != nil {
-		fmt.Println("could not load ROM: ", err)
+		fmt.Println(err)
 
 		return
 	}
 
-	if err := runUntilError(emu, delay); err != nil {
+	if err := runUntilError(r, emu, delay); err != nil {
 		fmt.Println("error: ", err)
 	}
 }
 
-func runUntilError(emu *chipper.Emulator, delay time.Duration) error {
+func mkEmu(stackSize, ramSize, w, h int) (*chipper.Emulator, error) {
+	display, err := chipper.NewDebugDisplay(w, h)
+	if err != nil {
+		return nil, fmt.Errorf("error: %w", err)
+	}
+
+	emu, err := chipper.NewEmulator(
+		stackSize,
+		ramSize,
+		display,
+	)
+	if err != nil {
+		return nil, fmt.Errorf("error creating emulator: %w", err)
+	}
+
+	return emu, nil
+}
+
+func runUntilError(r io.Reader, emu *chipper.Emulator, delay time.Duration) error {
+	if err := emu.Load(r); err != nil {
+		return fmt.Errorf("could not load ROM: %w", err)
+	}
+
 	for {
 		err := emu.Tick()
 		if errors.Is(err, io.EOF) {

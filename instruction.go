@@ -145,11 +145,10 @@ func (emu *Emulator) clearScreen() error {
 	b := emu.Display.Bounds()
 	dx, dy := b.Dx(), b.Dy()
 
+	clearColor := emu.Display.ColorClear()
 	for x := 0; x < dx; x++ {
 		for y := 0; y < dy; y++ {
-			if err := emu.Display.Set(x, y, ColorBlack); err != nil {
-				return fmt.Errorf("could not clear pixel at (%d, %d): %w", x, y, err)
-			}
+			emu.Display.Set(x, y, clearColor)
 		}
 	}
 
@@ -536,6 +535,8 @@ func (emu *Emulator) drawSpriteInXY(x, y, n int) error {
 	posx, posy := int(emu.V[x]), int(emu.V[y])
 
 	emu.V[0xF] = 0
+	clearColor := emu.Display.ColorClear()
+	setColor := emu.Display.ColorSet()
 
 	for yline := 0; yline < n; yline++ {
 		addr := int(emu.Index) + yline
@@ -547,16 +548,23 @@ func (emu *Emulator) drawSpriteInXY(x, y, n int) error {
 			xpos := (posx + xline) % dx
 			ypos := (posy + yline) % dx
 			at := emu.Display.At(xpos, ypos)
+			bit := byte(1)
+			if ColorEq(at, clearColor) {
+				bit = 0
+			}
 
-			newPix := value ^ byte(at)
+			newPix := value ^ byte(bit)
 
-			if Color(value) == at {
+			if value == bit {
 				emu.V[0xF] = 1
 			}
 
-			if err := emu.Display.Set(xpos, ypos, Color(newPix)); err != nil {
-				return fmt.Errorf("could not set (%d, %d, %s): %w", xpos, ypos, Color(newPix), err)
+			c := clearColor
+			if newPix == 1 {
+				c = setColor
 			}
+
+			emu.Display.Set(xpos, ypos, c)
 		}
 
 		if (posy + yline) >= dy {

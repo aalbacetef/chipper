@@ -25,7 +25,7 @@ type Emulator struct {
 	Keys       [NumKeys]bool
 	Stack      *Stack
 	RAM        []byte
-	Display    *Display
+	Display    Display
 	cancelFns  []context.CancelFunc
 	listeners  Listeners
 }
@@ -109,7 +109,7 @@ func NewRAM(size int) ([]byte, error) {
 	return make([]byte, size), nil
 }
 
-func NewEmulator(stackSize, ramSize, w, h int) (*Emulator, error) {
+func NewEmulator(stackSize, ramSize int, d Display) (*Emulator, error) {
 	stack, err := NewStack(stackSize)
 	if err != nil {
 		return nil, fmt.Errorf("could not create stack: %w", err)
@@ -120,16 +120,11 @@ func NewEmulator(stackSize, ramSize, w, h int) (*Emulator, error) {
 		return nil, fmt.Errorf("could not create ram: %w", err)
 	}
 
-	display, err := NewDisplay(w, h)
-	if err != nil {
-		return nil, fmt.Errorf("could not create display: %w", err)
-	}
-
 	emu := &Emulator{
 		PC:      StartAddress,
 		Stack:   stack,
 		RAM:     ram,
-		Display: display,
+		Display: d,
 	}
 
 	if err := loadSprites(emu); err != nil {

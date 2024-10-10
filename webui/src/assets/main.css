@@ -1,0 +1,8 @@
+.debug {
+  border: 1px solid red;
+}
+
+canvas {
+  width: 640px;
+  height: 320px;
+}

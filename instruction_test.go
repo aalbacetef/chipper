@@ -32,19 +32,26 @@ func TestInstruction(t *testing.T) {
 func testClearScreen(t *testing.T) {
 	emu := mkEmu(t)
 
-	for k := range emu.Display.data {
-		emu.Display.data[k] = 1
-	}
+	colorSet := emu.Display.ColorSet()
+	_ = Each(emu.Display, func(x, y int) error {
+		emu.Display.Set(x, y, colorSet)
+
+		return nil
+	})
 
 	if err := emu.clearScreen(); err != nil {
 		t.Fatalf("error: %v", err)
 	}
 
-	for k, v := range emu.Display.data {
-		if v != 0 {
-			t.Fatalf("index %d is not cleared", k)
+	colorClear := emu.Display.ColorClear()
+	_ = Each(emu.Display, func(x, y int) error {
+		at := emu.Display.At(x, y)
+		if !ColorEq(at, colorClear) {
+			t.Fatalf("(%d, %d) not clear", x, y)
 		}
-	}
+
+		return nil
+	})
 }
 
 func testReturnFromSub(t *testing.T) {
