@@ -1,13 +1,13 @@
 
-type WASMLoadResult = {
+export type WASMLoadResult = {
   go: Go;
   result: WebAssembly.WebAssemblyInstantiatedSource;
 }
 
-export async function initialize(wasmName: string): Promise<WASMLoadResult> {
+export async function loadWASM(wasmName: string): Promise<WASMLoadResult> {
+  console.log('wasmName:', wasmName);
   const go = new Go();
 
-  console.log('initialize');
   const result = await WebAssembly.instantiateStreaming(
     fetch(wasmName, { headers: { "Content-Type": "application/wasm" } }),
     go.importObject,

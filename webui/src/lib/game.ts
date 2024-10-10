@@ -1,35 +1,45 @@
 
-const w = 64;
-const h = 32;
+// const w = 64;
+// const h = 32;
 const delay = 180;
 
+
+type CanvasContext = CanvasRenderingContext2D | OffscreenCanvasRenderingContext2D;
 
 // @TODO: reuse buffer instead of declaring a new one.
 // @TODO: run should probably be passed to request animation frame
 // @TODO: wrap get display calls in a buffer
-export function run(ctx: CanvasRenderingContext2D): void {
+export function run(ctx: CanvasContext, w: number, h: number, GetDisplay): void {
   const n = w * h;
   const buf = new Uint8Array(n);
-  const copied = window.GetDisplay(buf);
+  const copied = GetDisplay(buf);
 
   if (copied !== n) {
     console.log(`failed to copy bytes, want ${n}, got ${copied}`);
     return;
   }
 
-  const imgData = drawImage(ctx, buf);
+  const imgData = drawImage(ctx, buf, w, h);
   ctx.clearRect(0, 0, w * 10, h * 10);
-  createImageBitmap(imgData, { resizeWidth: w * 10, resizeHeight: h * 10, resizeQuality: "pixelated" })
+
+  createImageBitmap(
+    imgData,
+    {
+      resizeWidth: w * 10,
+      resizeHeight: h * 10,
+      resizeQuality: "pixelated",
+    },
+  )
     .then(bitmap => {
       ctx.drawImage(bitmap, 0, 0);
-      setTimeout(() => run(ctx), delay);
+      setTimeout(() => run(ctx, w, h, GetDisplay), delay);
     });
 }
 
 
 const setColor = [10, 200, 10, 150]
 
-function drawImage(ctx: CanvasRenderingContext2D, buf: Uint8Array): ImageData {
+function drawImage(ctx: CanvasContext, buf: Uint8Array, w: number, h: number): ImageData {
   const imgData = ctx.createImageData(w, h);
   const data = imgData.data;
   const n = buf.length;

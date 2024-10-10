@@ -5,15 +5,22 @@ import { createPinia } from 'pinia'
 
 import App from './App.vue'
 import router from './router'
-import { initialize } from './lib/wasm';
+import { WorkerPeer } from './lib/peer'
+import { Event } from './lib/messages'
 
 const app = createApp(App)
 
 app.use(createPinia())
 app.use(router)
 
-initialize("webui.wasm")
-  .then(r => {
-    app.provide("wasmLoad", r);
-    app.mount('#app');
-  });
+const url = new URL('@/worker/index.ts', import.meta.url);
+const workerPeer = new WorkerPeer(new Worker(url, { type: "module" }));
+
+workerPeer.on(Event.WASMLoaded, () => {
+  app.mount("#app");
+});
+workerPeer.loadWASM("/webui.wasm");
+
+
+app.provide<WorkerPeer>("workerPeer", workerPeer);
+

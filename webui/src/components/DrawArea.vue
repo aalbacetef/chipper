@@ -1,16 +1,16 @@
 <script setup lang="ts">
-import { onMounted, ref, useTemplateRef } from 'vue';
-import { run } from '../lib/game';
+import { inject, onMounted, ref, useTemplateRef } from 'vue';
 
 const loading = ref<boolean>(true);
 const canvas = useTemplateRef<HTMLCanvasElement>("canvas");
 
+
 onMounted(() => {
   loading.value = false;
-  window.LoadROM();
-  window.StartEmu();
-  const ctx = canvas.value.getContext('2d');
-  run(ctx);
+
+  const workerPeer = inject<WorkerPeer>("workerPeer");
+  workerPeer.setOnscreenCanvas(canvas.value);
+  workerPeer.makeOffscreenCanvas();
 });
 
 </script>

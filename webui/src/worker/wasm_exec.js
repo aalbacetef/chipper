@@ -5,6 +5,8 @@
 "use strict";
 
 (() => {
+	var globalThis = globalThis || self;
+
 	const enosys = () => {
 		const err = new Error("not implemented");
 		err.code = "ENOSYS";
@@ -550,7 +552,7 @@
 
 		_makeFuncWrapper(id) {
 			const go = this;
-			return function () {
+			return function() {
 				const event = { id: id, this: this, args: arguments };
 				go._pendingEvent = event;
 				go._resume();
