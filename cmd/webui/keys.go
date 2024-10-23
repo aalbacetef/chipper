@@ -18,7 +18,7 @@ func NewWebKeyInputSource() *WebKeyInputSource {
 	return &WebKeyInputSource{}
 }
 
-func (ksrc *WebKeyInputSource) Set(key int, v bool) {
+func (ksrc *WebKeyInputSource) Set(key int, isPressed bool) {
 	ksrc.mu.Lock()
 	defer ksrc.mu.Unlock()
 
@@ -32,13 +32,13 @@ func (ksrc *WebKeyInputSource) Set(key int, v bool) {
 		return
 	}
 
-	if v && ksrc.listener != nil {
+	if isPressed && ksrc.listener != nil {
 		fmt.Println("set key listener")
 		ksrc.listener <- key
 		ksrc.listener = nil
 	}
 
-	ksrc.keys[key] = v
+	ksrc.keys[key] = isPressed
 }
 
 func (ksrc *WebKeyInputSource) Get(key int) bool {
