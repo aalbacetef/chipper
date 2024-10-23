@@ -1,17 +1,13 @@
 
-// const w = 64;
-// const h = 32;
-const delay = 180;
 
 
 type CanvasContext = CanvasRenderingContext2D | OffscreenCanvasRenderingContext2D;
-type GetDisplayFunc = (buf: Uint8Array) => number;
 
 // @TODO: reuse buffer instead of declaring a new one.
 // @TODO: run should probably be passed to request animation frame
 // @TODO: wrap get display calls in a buffer
 // @TODO: flexible scale factor for different kinds of screens (e.g: mobile).
-export function run(ctx: CanvasContext, w: number, h: number, GetDisplay: GetDisplayFunc): void {
+export function render(ctx: CanvasContext, w: number, h: number): void {
   const n = w * h;
   const buf = new Uint8Array(n);
   const copied = GetDisplay(buf);
@@ -34,7 +30,6 @@ export function run(ctx: CanvasContext, w: number, h: number, GetDisplay: GetDis
   )
     .then(bitmap => {
       ctx.drawImage(bitmap, 0, 0);
-      setTimeout(() => run(ctx, w, h, GetDisplay), delay);
     });
 }
 
@@ -58,4 +53,47 @@ function drawImage(ctx: CanvasContext, buf: Uint8Array, w: number, h: number): I
   }
 
   return imgData;
+}
+
+type KeyMap = {
+  [key: string]: number;
+}
+
+function kkey(s: string): string {
+  const digit = /[0-9]/
+  const letter = /[a-zA-Z]/
+  if (digit.test(s)) { return 'Digit' + s }
+  if (letter.test(s)) { return 'Key' + s }
+
+  return s;
+}
+
+function loadKeyMap(): KeyMap {
+  const keys = [
+    'V', '1', '2', '3', '4',
+    'Q', 'W', 'E', 'R',
+    'A', 'S', 'D', 'F',
+    'Z', 'X', 'C',
+  ].map(s => kkey(s));
+
+
+  const o = {};
+  keys.forEach((key, index) => o[key] = index);
+
+  return o;
+}
+
+export function mapKeyToHex(s: string): number {
+  const keyMap = loadKeyMap();
+  if (typeof keyMap[s] === 'undefined') {
+    throw new MissingKeyError(s);
+  }
+
+  return keyMap[s];
+}
+
+class MissingKeyError extends Error {
+  constructor(key: string) {
+    super(`missing map for key: '${key}`);
+  }
 }

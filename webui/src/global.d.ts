@@ -1,3 +1,4 @@
+import type { KeyDirection } from "./lib/messages";
 
 declare class Go {
   constructor();
@@ -8,7 +9,10 @@ declare class Go {
   importObject: WebAssembly.Imports;
 }
 
-declare function StartEmu(): void;
-declare function LoadROM(): void;
-declare function GetDisplay(buf: Uint8Array): number;
+declare global {
+  function StartEmu(): void;
+  function LoadROM(arr: Uint8Array, n: number): void;
+  function GetDisplay(buf: Uint8Array): number;
+  function SendKeyboardEvent(key: number, repeat: boolean, direction: KeyDirection): void;
+}
 

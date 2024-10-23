@@ -6,11 +6,11 @@ export type GenericMessage = {
 };
 
 export enum Event {
-  WorkerLoaded,
-  WASMLoaded,
-  ROMLoaded,
-  EmuStarted,
-  CanvasCreated,
+  WorkerLoaded = "worker-loaded",
+  WASMLoaded = "wasm-loaded",
+  ROMLoaded = "rom-loaded",
+  EmuStarted = "emu-started",
+  CanvasCreated = "canvas-created",
 }
 
 export enum MessageType {
@@ -19,6 +19,7 @@ export enum MessageType {
   LoadROM = "load-rom",
   StartEmu = "start-emu",
   TransferOffscreenCanvas = "transfer-offscreen-canvas",
+  KeyEvent = "key-event",
 }
 
 export type WorkerEvent = {
@@ -52,4 +53,18 @@ export type TransferOffscreenCanvas = {
   data: {
     canvas: OffscreenCanvas;
   };
+}
+
+export enum KeyDirection {
+  Up,
+  Down,
+}
+
+export type KeyEvent = {
+  type: MessageType.KeyEvent;
+  data: {
+    repeat: boolean;
+    key: number;
+    direction: KeyDirection;
+  }
 }
