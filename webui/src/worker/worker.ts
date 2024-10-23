@@ -1,4 +1,4 @@
-import { render } from '@/lib/game';
+import { render, type ColorOptions, type Dims } from '@/lib/game';
 import type { GenericMessage, KeyEvent, LoadROM, LoadWASM, StartEmu, TransferOffscreenCanvas, WorkerEvent } from '@/lib/messages';
 import { MessageType, Event } from "@/lib/messages";
 import { loadWASM, type WASMLoadResult } from '@/lib/wasm';
@@ -10,6 +10,14 @@ export function initialize() {
   notifyStateChange(Event.WorkerLoaded);
 }
 
+const emulatorConstants = {
+  w: 64,
+  h: 32,
+}
+
+
+// WorkerInstance implements the core functionality of our Web Worker 
+// in which we run our WASM emulator.
 class WorkerInstance {
   result?: WASMLoadResult;
   canvas?: OffscreenCanvas;
@@ -17,17 +25,29 @@ class WorkerInstance {
 
   startRendering(): void {
     console.log('startRendering');
+
     const ctx = this.canvas!.getContext('2d');
     if (ctx === null) {
+      console.log('could not acquire context');
       return;
     }
-    const [w, h] = [64, 32];
-    this.loop(ctx, w, h);
+
+    const { w, h } = emulatorConstants;
+    const buf: Uint8Array = new Uint8Array(w * h);
+
+    this.loop(buf, ctx, w, h);
   }
 
-  loop(ctx: OffscreenCanvasRenderingContext2D, w: number, h: number) {
-    render(ctx, w, h);
-    setTimeout(() => this.loop(ctx, w, h), 16);
+  loop(buf: Uint8Array, ctx: OffscreenCanvasRenderingContext2D, w: number, h: number) {
+    const colors: ColorOptions = {
+      set: [10, 200, 10, 150],
+      clear: [0, 0, 0, 255],
+    };
+
+    const dims: Dims = [w, h];
+
+    render(buf, ctx, dims, colors);
+    setTimeout(() => this.loop(buf, ctx, w, h), 16);
   }
 
   handleMessage(msg: GenericMessage) {
@@ -76,9 +96,7 @@ class WorkerInstance {
 
   handleStartEmu(msg: StartEmu): void {
     self.StartEmu();
-
     notifyStateChange(Event.EmuStarted);
-
     this.startRendering();
   }
 
