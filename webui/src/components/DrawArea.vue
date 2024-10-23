@@ -3,15 +3,16 @@ import { inject, onMounted, ref, useTemplateRef } from 'vue';
 
 const loading = ref<boolean>(true);
 const canvas = useTemplateRef<HTMLCanvasElement>("canvas");
+const workerPeer = inject<WorkerPeer>("workerPeer");
 
 
 onMounted(() => {
   loading.value = false;
 
-  const workerPeer = inject<WorkerPeer>("workerPeer");
   workerPeer.setOnscreenCanvas(canvas.value);
   workerPeer.makeOffscreenCanvas();
 });
+
 
 </script>
 

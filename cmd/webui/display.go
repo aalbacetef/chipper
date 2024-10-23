@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"image"
 	"image/color"
+
 	"sync"
 
 	"github.com/aalbacetef/chipper"
@@ -15,7 +16,13 @@ type Display struct {
 	data    []byte
 	palette color.Palette
 	mu      sync.Mutex
+	// mu noopMutex
 }
+
+type noopMutex struct{}
+
+func (noopMutex) Lock()   {}
+func (noopMutex) Unlock() {}
 
 func NewDisplay(w, h int) *Display {
 	data := make([]byte, w*h)
@@ -65,6 +72,9 @@ func (d *Display) ColorSet() color.Color {
 }
 
 func (d *Display) Set(x, y int, c color.Color) {
+	d.mu.Lock()
+	defer d.mu.Unlock()
+
 	if !d.inBounds(x, y) {
 		return
 	}
@@ -86,6 +96,9 @@ func (d *Display) inBounds(x, y int) bool {
 }
 
 func (d *Display) At(x, y int) color.Color {
+	d.mu.Lock()
+	defer d.mu.Unlock()
+
 	if !d.inBounds(x, y) {
 		return color.Black
 	}

@@ -5,7 +5,8 @@ import (
 	"errors"
 	"fmt"
 	"io"
-	"sync"
+	"log"
+	"time"
 )
 
 const (
@@ -17,88 +18,29 @@ const (
 )
 
 type Emulator struct {
-	PC         uint16
-	V          [RegisterCount]byte
-	DelayTimer byte
-	SoundTimer byte
-	Index      uint16
-	Keys       [NumKeys]bool
-	Stack      *Stack
-	RAM        []byte
-	Display    Display
-	cancelFns  []context.CancelFunc
-	listeners  Listeners
+	PC              uint16
+	V               [RegisterCount]byte
+	DelayTimer      byte
+	SoundTimer      byte
+	Index           uint16
+	Keys            KeyInputSource
+	Stack           *Stack
+	RAM             []byte
+	Display         Display
+	cancelFns       []context.CancelFunc
+	LastInstruction Instruction
+	logger          *log.Logger
+	lastTick        time.Time
+}
+
+func (emu *Emulator) SetLogger(l *log.Logger) {
+	emu.logger = l
 }
 
 func (emu *Emulator) Close() {
 	for _, cancel := range emu.cancelFns {
 		cancel()
 	}
-}
-
-type EventType string
-
-type Listener struct {
-	ID        string
-	EventType EventType
-	ch        chan Event
-}
-
-type Listeners struct {
-	listeners []Listener
-	mu        sync.Mutex
-}
-
-func (ls *Listeners) All() []Listener {
-	ls.mu.Lock()
-	listeners := make([]Listener, len(ls.listeners))
-	copy(listeners, ls.listeners)
-	ls.mu.Unlock()
-
-	return listeners
-}
-
-func (ls *Listeners) Del(id string) {
-	ls.mu.Lock()
-	defer ls.mu.Unlock()
-
-	listeners := make([]Listener, 0, len(ls.listeners)-1)
-	for _, l := range ls.listeners {
-		if l.ID == id {
-			continue
-		}
-
-		listeners = append(listeners, l)
-	}
-
-	ls.listeners = listeners
-}
-
-func (ls *Listeners) Add(l Listener) {
-	ls.mu.Lock()
-	defer ls.mu.Unlock()
-
-	ls.listeners = append(ls.listeners, l)
-}
-
-type Event struct{}
-
-func (emu *Emulator) RegisterEventSource(src <-chan Event) {
-	ctx, cancel := context.WithCancel(context.Background())
-	emu.cancelFns = append(emu.cancelFns, cancel)
-
-	go func() {
-		for {
-			select {
-			case <-ctx.Done():
-				return
-			case ev := <-src:
-				for _, l := range emu.listeners.All() {
-					l.ch <- ev
-				}
-			}
-		}
-	}()
 }
 
 func NewRAM(size int) ([]byte, error) {
@@ -109,7 +51,7 @@ func NewRAM(size int) ([]byte, error) {
 	return make([]byte, size), nil
 }
 
-func NewEmulator(stackSize, ramSize int, d Display) (*Emulator, error) {
+func NewEmulator(stackSize, ramSize int, d Display, keys KeyInputSource) (*Emulator, error) {
 	stack, err := NewStack(stackSize)
 	if err != nil {
 		return nil, fmt.Errorf("could not create stack: %w", err)
@@ -124,6 +66,7 @@ func NewEmulator(stackSize, ramSize int, d Display) (*Emulator, error) {
 		PC:      StartAddress,
 		Stack:   stack,
 		RAM:     ram,
+		Keys:    keys,
 		Display: d,
 	}
 
@@ -134,29 +77,79 @@ func NewEmulator(stackSize, ramSize int, d Display) (*Emulator, error) {
 	return emu, nil
 }
 
+func (emu *Emulator) subtractTimers() {
+	period := time.Millisecond * 16
+	elapsed := time.Since(emu.lastTick)
+	if elapsed < period {
+		return
+	}
+
+	times := elapsed / period
+	sub := int(times)
+
+	if emu.DelayTimer > 0 {
+		dt := int(emu.DelayTimer) - sub
+		if dt < 0 {
+			dt = 0
+		}
+		emu.DelayTimer = byte(dt)
+	}
+
+	if emu.SoundTimer > 0 {
+		st := int(emu.SoundTimer) - sub
+		if st < 0 {
+			st = 0
+		}
+		emu.SoundTimer = byte(st)
+	}
+}
+
 // Tick .
 func (emu *Emulator) Tick() error {
+	if emu.lastTick.IsZero() {
+		emu.lastTick = time.Now()
+	}
+
+	emu.subtractTimers()
+
+	logger := emu.logger
+	if logger == nil {
+		logger = log.New(io.Discard, "[emu] ", log.Ltime)
+	}
+
+	logger.Println("fetch")
 	instrBytes, err := emu.Fetch(InstructionSize)
 	if errors.Is(err, io.EOF) {
 		return fmt.Errorf("reached last instruction: %w", io.EOF)
 	}
 
 	if err != nil {
+		log.Printf("error fetching: %v", err)
 		return fmt.Errorf("error fetching instruction: %w", err)
 	}
 
 	// update PC
 	emu.PC += uint16(InstructionSize)
 
+	logger.Println("decoding")
+
 	// decode
 	instr, err := Decode(instrBytes)
 	if err != nil {
+		log.Printf("error decoding: %v", err)
+		fmt.Println("could not decode : ", err)
 		return fmt.Errorf("could not decode instruction: %w", err)
 	}
+
+	emu.LastInstruction = instr
+
+	logger.Println("executing instruction: ", instr.String())
 
 	// execute
 	execErr := emu.Execute(instr)
 	if execErr != nil {
+		logger.Printf("error executing: %v", err)
+		fmt.Println("could not execute: ", err)
 		return execErr
 	}
 

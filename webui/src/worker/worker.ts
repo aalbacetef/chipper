@@ -1,5 +1,5 @@
-import { run } from '@/lib/game';
-import type { GenericMessage, LoadROM, LoadWASM, StartEmu, TransferOffscreenCanvas, WorkerEvent } from '@/lib/messages';
+import { render } from '@/lib/game';
+import type { GenericMessage, KeyEvent, LoadROM, LoadWASM, StartEmu, TransferOffscreenCanvas, WorkerEvent } from '@/lib/messages';
 import { MessageType, Event } from "@/lib/messages";
 import { loadWASM, type WASMLoadResult } from '@/lib/wasm';
 
@@ -15,8 +15,19 @@ class WorkerInstance {
   canvas?: OffscreenCanvas;
 
 
-  startRendering() {
+  startRendering(): void {
+    console.log('startRendering');
+    const ctx = this.canvas!.getContext('2d');
+    if (ctx === null) {
+      return;
+    }
+    const [w, h] = [64, 32];
+    this.loop(ctx, w, h);
+  }
 
+  loop(ctx: OffscreenCanvasRenderingContext2D, w: number, h: number) {
+    render(ctx, w, h);
+    setTimeout(() => this.loop(ctx, w, h), 16);
   }
 
   handleMessage(msg: GenericMessage) {
@@ -33,6 +44,9 @@ class WorkerInstance {
       case MessageType.TransferOffscreenCanvas:
         return this.handleTransferOffscreenCanvas(msg as TransferOffscreenCanvas);
 
+      case MessageType.KeyEvent:
+        return this.handleKeyEvent(msg as KeyEvent);
+
       default:
         console.log('unhandled message: ', msg);
     }
@@ -47,28 +61,36 @@ class WorkerInstance {
   }
 
   handleLoadROM(msg: LoadROM): void {
-    // @TODO: implement support for loading various ROMs
-    self.LoadROM();
+    const filename = msg.data.filename;
+    fetch(filename)
+      .then(r => {
+        return r.arrayBuffer()
+      }).then(buf => {
+        const arr = new Uint8Array(buf);
 
-    notifyStateChange(Event.ROMLoaded);
+        LoadROM(arr, arr.byteLength);
+        notifyStateChange(Event.ROMLoaded);
+
+      });
   }
 
   handleStartEmu(msg: StartEmu): void {
     self.StartEmu();
 
     notifyStateChange(Event.EmuStarted);
+
+    this.startRendering();
   }
 
   handleTransferOffscreenCanvas(msg: TransferOffscreenCanvas): void {
     const canvas = msg.data.canvas;
     this.canvas = canvas;
-    const ctx = canvas.getContext('2d');
-    if (ctx === null) {
-      return;
-    }
+  }
 
-    const [w, h] = [64, 32];
-    run(ctx, w, h, self.GetDisplay);
+  handleKeyEvent(msg: KeyEvent): void {
+    const { key, repeat, direction } = msg.data;
+
+    SendKeyboardEvent(key, repeat, direction);
   }
 }
 

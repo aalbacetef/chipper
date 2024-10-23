@@ -56,7 +56,16 @@ func testROM(t *testing.T, rom []byte, golden []byte) {
 		testMaxCount  = 200
 	)
 
-	emu, err := NewEmulator(testStackSize, testRAMSize, testW, testH)
+	d, err := NewDebugDisplay(testW, testH)
+	if err != nil {
+		t.Fatalf("could not make debug display: %v", err)
+	}
+
+	emu, err := NewEmulator(
+		testStackSize, testRAMSize,
+		d,
+		&StubKeyInputSource{},
+	)
 	if err != nil {
 		t.Fatalf("could not create emulator: %v", err)
 	}

@@ -68,6 +68,7 @@ func mkEmu(stackSize, ramSize, w, h int) (*chipper.Emulator, error) {
 		stackSize,
 		ramSize,
 		display,
+		&chipper.StubKeyInputSource{},
 	)
 	if err != nil {
 		return nil, fmt.Errorf("error creating emulator: %w", err)

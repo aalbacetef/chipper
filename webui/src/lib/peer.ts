@@ -1,16 +1,18 @@
 import {
   MessageType,
   Event,
-  type StartEmu
 } from "@/lib/messages";
 
-import type {
-  GenericMessage,
-  LoadROM,
-  LoadWASM,
-  TransferOffscreenCanvas,
-  WorkerEvent,
-} from "./messages";
+import {
+  KeyDirection,
+  type GenericMessage,
+  type LoadROM,
+  type LoadWASM,
+  type TransferOffscreenCanvas,
+  type WorkerEvent,
+  type StartEmu,
+  type KeyEvent,
+} from "@/lib/messages";
 
 export class WorkerPeer {
   worker: Worker;
@@ -39,14 +41,13 @@ export class WorkerPeer {
     });
   }
 
-  loadROM(): void {
-    console.log('loadROM');
+  loadROM(filename: string): void {
     this.on(Event.ROMLoaded, () => console.log('rom loaded'), true);
 
     this.postMessage<LoadROM>({
       type: MessageType.LoadROM,
       data: {
-        filename: "zero-demo-2007.ch8", // @TODO: implement support for this
+        filename, // @TODO: implement support for this
       }
     });
   }
@@ -73,7 +74,27 @@ export class WorkerPeer {
         canvas: this.offscreenCanvas,
       }
     };
+
     this.worker.postMessage(msg, [this.offscreenCanvas]);
+  }
+
+  sendKeyUp(key: number, repeat: boolean): void {
+    this.sendKeyEvent(KeyDirection.Up, repeat, key);
+  }
+
+  sendKeyDown(key: number, repeat: boolean): void {
+    this.sendKeyEvent(KeyDirection.Down, repeat, key);
+  }
+
+  sendKeyEvent(direction: KeyDirection, repeat: boolean, key: number): void {
+    this.postMessage<KeyEvent>({
+      type: MessageType.KeyEvent,
+      data: {
+        key,
+        repeat,
+        direction,
+      }
+    })
   }
 
   postMessage<T>(msg: T): void {

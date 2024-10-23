@@ -141,13 +141,19 @@ func (emu *Emulator) Execute(instr Instruction) error { //nolint: funlen,cyclop
 	}
 }
 
+func (emu *Emulator) execNNN(args []int) error {
+	panic("SHOULD NOT BE HERE")
+	return nil
+}
+
 func (emu *Emulator) clearScreen() error {
 	b := emu.Display.Bounds()
 	dx, dy := b.Dx(), b.Dy()
 
 	clearColor := emu.Display.ColorClear()
-	for x := 0; x < dx; x++ {
-		for y := 0; y < dy; y++ {
+
+	for y := 0; y < dy; y++ {
+		for x := 0; x < dx; x++ {
 			emu.Display.Set(x, y, clearColor)
 		}
 	}
@@ -356,12 +362,14 @@ func (emu *Emulator) addYToX(x, y int) error {
 	}
 
 	val := int(emu.V[x]) + int(emu.V[y])
+
+	emu.V[0xF] = 0
 	if val > max8BitVal {
 		emu.V[0xF] = 1
 	}
 
 	// note: the typecase is enough, but I prefer to be explicit
-	emu.V[x] = byte(val % wrapValue)
+	emu.V[x] = byte(val & max8BitVal)
 
 	return nil
 }
@@ -493,7 +501,7 @@ func (emu *Emulator) jumpToAddrNNNPlusV0(args []int) error {
 	newAddr := addr + uint16(emu.V[0])
 	ramSize := len(emu.RAM)
 
-	if err := isInBounds(int(newAddr), ramSize); err != nil {
+	if err := isInBounds(ramSize, int(newAddr)); err != nil {
 		return err
 	}
 
@@ -580,8 +588,9 @@ func (emu *Emulator) skipIfKeyInXIsPressed(x int) error {
 		return err
 	}
 
-	key := emu.Keys[emu.V[x]]
-	if key {
+	fmt.Println("skip if key pressed: ", emu.V[x])
+	v := emu.Keys.Get(int(emu.V[x]))
+	if v {
 		emu.PC += InstructionSize
 	}
 
@@ -593,8 +602,9 @@ func (emu *Emulator) skipIfKeyInXNotPressed(x int) error {
 		return err
 	}
 
-	key := emu.Keys[emu.V[x]]
-	if !key {
+	fmt.Println("skip if key not pressed: ", emu.V[x])
+	v := emu.Keys.Get(int(emu.V[x]))
+	if !v {
 		emu.PC += InstructionSize
 	}
 
@@ -616,26 +626,12 @@ func (emu *Emulator) waitForKeyAndStoreInX(x int) error {
 		return err
 	}
 
-	// l := Listener{
-	// 	EventType: "KeyEvent",
-	// 	ID:        "waitForKeyAndStoreInX",
-	// 	ch:        make(chan Event, 1),
-	// }
-	//
-	// emu.listeners.Add(l)
-	// // ev := <-l.ch
-	// emu.listeners.Del(l.ID)
-	//
-	// for {
-	// 	for k, key := range emu.Keys {
-	// 		if key {
-	// 			emu.V[x] = byte(k)
-	// 			return nil
-	// 		}
-	// 	}
-	// }
+	fmt.Println("[instruction.go] waiting for key")
+	key := <-emu.Keys.WaitUntilKeypress()
+	fmt.Println("[instruction.go] got key: ", key)
+	emu.V[x] = byte(key)
 
-	return InstructionNotImplementedError{WaitForKeyAndStoreInX}
+	return nil
 }
 
 func (emu *Emulator) setDTToX(x int) error {
