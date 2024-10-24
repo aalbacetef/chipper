@@ -22,4 +22,8 @@ onMounted(() => {
   </div>
 </template>
 
-<style></style>
+<style scoped>
+canvas {
+  border: 1px solid #CCCCCC;
+}
+</style>

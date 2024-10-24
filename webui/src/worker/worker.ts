@@ -1,9 +1,10 @@
 import { render, type ColorOptions, type Dims } from '@/lib/game';
-import type { GenericMessage, KeyEvent, LoadROM, LoadWASM, StartEmu, TransferOffscreenCanvas, WorkerEvent } from '@/lib/messages';
+import type { GenericMessage, KeyEvent, LoadROM, LoadWASM, RestartEmu, StartEmu, StopEmu, TransferOffscreenCanvas, WorkerEvent } from '@/lib/messages';
 import { MessageType, Event } from "@/lib/messages";
 import { loadWASM, type WASMLoadResult } from '@/lib/wasm';
 
-import * as WASMExec from "@/worker/wasm_exec.js";
+// ensure wasm glue code for Go is registered in the worker.
+import "@/worker/wasm_exec.js";
 
 export function initialize() {
   registerHandlers();
@@ -61,11 +62,18 @@ class WorkerInstance {
       case MessageType.StartEmu:
         return this.handleStartEmu(msg as StartEmu);
 
+      case MessageType.StopEmu:
+        return this.handleStopEmu(msg as StopEmu);
+
+      case MessageType.RestartEmu:
+        return this.handleRestartEmu(msg as RestartEmu);
+
       case MessageType.TransferOffscreenCanvas:
         return this.handleTransferOffscreenCanvas(msg as TransferOffscreenCanvas);
 
       case MessageType.KeyEvent:
         return this.handleKeyEvent(msg as KeyEvent);
+
 
       default:
         console.log('unhandled message: ', msg);
@@ -100,6 +108,17 @@ class WorkerInstance {
     this.startRendering();
   }
 
+  handleStopEmu(msg: StopEmu): void {
+    self.StopEmu();
+    notifyStateChange(Event.EmuStopped);
+  }
+
+  handleRestartEmu(msg: RestartEmu): void {
+    self.RestartEmu();
+    notifyStateChange(Event.EmuRestarted);
+  }
+
+
   handleTransferOffscreenCanvas(msg: TransferOffscreenCanvas): void {
     const canvas = msg.data.canvas;
     this.canvas = canvas;
@@ -113,7 +132,7 @@ class WorkerInstance {
 }
 
 function registerHandlers() {
-  console.log("registerHandlers:");
+  console.log("registering handlers...");
   const worker = new WorkerInstance();
 
   self.addEventListener(

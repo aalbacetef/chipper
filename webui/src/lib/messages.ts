@@ -10,6 +10,8 @@ export enum Event {
   WASMLoaded = "wasm-loaded",
   ROMLoaded = "rom-loaded",
   EmuStarted = "emu-started",
+  EmuStopped = "emu-stopped",
+  EmuRestarted = "emu-restarted",
   CanvasCreated = "canvas-created",
 }
 
@@ -18,6 +20,8 @@ export enum MessageType {
   LoadWASM = "load-wasm",
   LoadROM = "load-rom",
   StartEmu = "start-emu",
+  StopEmu = "stop-emu",
+  RestartEmu = "restart-emu",
   TransferOffscreenCanvas = "transfer-offscreen-canvas",
   KeyEvent = "key-event",
 }
@@ -47,6 +51,16 @@ export type StartEmu = {
   type: MessageType.StartEmu;
   data: {};
 };
+
+export type StopEmu = {
+  type: MessageType.StopEmu;
+  data: {};
+}
+
+export type RestartEmu = {
+  type: MessageType.RestartEmu;
+  data: {};
+}
 
 export type TransferOffscreenCanvas = {
   type: MessageType.TransferOffscreenCanvas;

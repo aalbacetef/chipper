@@ -6,14 +6,29 @@ import { RouterLink, RouterView } from 'vue-router';
 
 <template>
   <header>
-    <div class="wrapper">
-      <nav>
-        <RouterLink to="/">Home</RouterLink>
-      </nav>
+    <nav>
+      <RouterLink to="/">Home</RouterLink>
+    </nav>
+
+    <div class="banner">
+      <div class="title">chipper</div>
+      <div class="sub-title">A CHIP-8 emulator</div>
     </div>
   </header>
 
   <RouterView />
 </template>
 
-<style scoped></style>
+<style scoped>
+.title {
+  font-size: 2.4em;
+}
+
+.sub-title {
+  font-size: 1.6em;
+}
+
+nav {
+  display: none;
+}
+</style>

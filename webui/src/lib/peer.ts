@@ -1,6 +1,8 @@
 import {
   MessageType,
   Event,
+  type StopEmu,
+  type RestartEmu,
 } from "@/lib/messages";
 
 import {
@@ -65,6 +67,25 @@ export class WorkerPeer {
       type: MessageType.StartEmu,
       data: {},
     });
+  }
+
+  stopEmu(): void {
+    this.on(Event.EmuStopped, () => console.log('emu stopped'), RunOnce);
+
+    this.postMessage<StopEmu>({
+      type: MessageType.StopEmu,
+      data: {},
+    })
+
+  }
+
+  restartEmu(): void {
+    this.on(Event.EmuRestarted, () => console.log('emu restarted'), RunOnce);
+
+    this.postMessage<RestartEmu>({
+      type: MessageType.RestartEmu,
+      data: {},
+    })
   }
 
   setOnscreenCanvas(canvas: HTMLCanvasElement): void {
