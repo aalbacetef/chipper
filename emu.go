@@ -141,7 +141,7 @@ func (emu *Emulator) Tick() error {
 		logger = log.New(io.Discard, "[emu] ", log.Ltime)
 	}
 
-	logger.Println("fetch")
+	logger.Printf("fetch (PC=%#0x)\n", emu.PC)
 
 	instrBytes, err := emu.Fetch(InstructionSize)
 	if errors.Is(err, io.EOF) {
