@@ -28,7 +28,7 @@ type Emulator struct {
 	Display         Display
 	LastInstruction Instruction
 	logger          *log.Logger
-	lastTick        time.Time
+	lastUpdate      time.Time
 }
 
 func (emu *Emulator) SetLogger(l *log.Logger) {
@@ -45,7 +45,7 @@ func NewRAM(size int) ([]byte, error) {
 	return make([]byte, size), nil
 }
 
-func NewEmulator(stackSize, ramSize int, d Display, keys KeyInputSource) (*Emulator, error) {
+func NewEmulator(stackSize, ramSize int, display Display, keys KeyInputSource) (*Emulator, error) {
 	stack, err := NewStack(stackSize)
 	if err != nil {
 		return nil, fmt.Errorf("could not create stack: %w", err)
@@ -61,7 +61,7 @@ func NewEmulator(stackSize, ramSize int, d Display, keys KeyInputSource) (*Emula
 		Stack:   stack,
 		RAM:     ram,
 		Keys:    keys,
-		Display: d,
+		Display: display,
 	}
 
 	if err := loadSprites(emu); err != nil {
@@ -73,10 +73,6 @@ func NewEmulator(stackSize, ramSize int, d Display, keys KeyInputSource) (*Emula
 
 // Load will read the ROM from the passed in io.Reader and load the sprites.
 func (emu *Emulator) Load(r io.Reader) error {
-	if err := loadSprites(emu); err != nil {
-		return fmt.Errorf("could not load sprites: %w", err)
-	}
-
 	ramSize := len(emu.RAM)
 	maxSize := ramSize - StartAddress
 	p := make([]byte, maxSize)
@@ -99,10 +95,16 @@ func (emu *Emulator) Load(r io.Reader) error {
 func (emu *Emulator) subtractTimers() {
 	const timerPeriod = 16 * time.Millisecond
 
-	elapsed := time.Since(emu.lastTick)
+	if emu.lastUpdate.IsZero() || time.Since(emu.lastUpdate) < timerPeriod {
+		return
+	}
+
+	elapsed := time.Since(emu.lastUpdate)
 	if elapsed < timerPeriod {
 		return
 	}
+
+	emu.lastUpdate = time.Now()
 
 	times := elapsed / timerPeriod
 	sub := int(times)
@@ -128,8 +130,9 @@ func (emu *Emulator) subtractTimers() {
 
 // Tick is the core Fetch-Decode-Execute loop of the emulator.
 func (emu *Emulator) Tick() error {
-	// set the field
-	emu.lastTick = time.Now()
+	if emu.lastUpdate.IsZero() {
+		emu.lastUpdate = time.Now()
+	}
 
 	emu.subtractTimers()
 
@@ -157,8 +160,6 @@ func (emu *Emulator) Tick() error {
 	// decode
 	instr, err := Decode(instrBytes)
 	if err != nil {
-		log.Printf("error decoding: %v", err)
-		fmt.Println("could not decode : ", err)
 		return fmt.Errorf("could not decode instruction: %w", err)
 	}
 
@@ -170,8 +171,6 @@ func (emu *Emulator) Tick() error {
 	// execute
 	execErr := emu.Execute(instr)
 	if execErr != nil {
-		logger.Printf("error executing: %v", err)
-		fmt.Println("could not execute: ", err)
 		return execErr
 	}
 
