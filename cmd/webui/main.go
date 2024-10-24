@@ -89,12 +89,12 @@ func main() {
 		return nil
 	})
 
-	resetFn := js.FuncOf(func(this js.Value, args []js.Value) any {
-		wrapper.reset()
+	restartFn := js.FuncOf(func(this js.Value, args []js.Value) any {
+		wrapper.restart()
 		return nil
 	})
 
-	js.Global().Set("ResetEmu", resetFn)
+	js.Global().Set("RestartEmu", restartFn)
 	js.Global().Set("StartEmu", startFn)
 	js.Global().Set("StopEmu", stopFn)
 	js.Global().Set("LoadROM", loadROMFn)

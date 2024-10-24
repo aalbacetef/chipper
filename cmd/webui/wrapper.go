@@ -80,6 +80,8 @@ func (wrapper *WASMWrapper) start(mainCtx context.Context, period time.Duration)
 	ticker := time.NewTicker(period)
 
 	go func() {
+		defer ticker.Stop()
+
 		for {
 			select {
 			case <-ctx.Done():
@@ -97,7 +99,7 @@ func (wrapper *WASMWrapper) start(mainCtx context.Context, period time.Duration)
 					last := wrapper.emu.LastInstruction
 
 					fmt.Println("error: ", err)
-					fmt.Printf("PC: %#0x | (%d) \n: ", pc, pc)
+					fmt.Printf("PC: %#0x | (%d) \n", pc, pc)
 					fmt.Printf("Index: %#0x\n", indx)
 					fmt.Println("last instruction: ", last)
 
@@ -118,7 +120,7 @@ func (wrapper *WASMWrapper) stop() {
 	}
 }
 
-func (wrapper *WASMWrapper) reset() {
+func (wrapper *WASMWrapper) restart() {
 	wrapper.stop()
 
 	wrapper.mu.Lock()
