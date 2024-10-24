@@ -47,7 +47,7 @@ class WorkerInstance {
     const dims: Dims = [w, h];
 
     render(buf, ctx, dims, colors);
-    setTimeout(() => this.loop(buf, ctx, w, h), 16);
+    requestAnimationFrame(() => this.loop(buf, ctx, w, h));
   }
 
   handleMessage(msg: GenericMessage) {
