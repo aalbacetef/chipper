@@ -12,7 +12,7 @@ func mkEmu(t *testing.T) *Emulator {
 		testH         = 32
 	)
 
-	d, err := NewDebugDisplay(testW, testH)
+	display, err := NewDebugDisplay(testW, testH)
 	if err != nil {
 		t.Fatalf("could not make debug display: %v", err)
 	}
@@ -20,7 +20,7 @@ func mkEmu(t *testing.T) *Emulator {
 	emu, err := NewEmulator(
 		testStackSize,
 		testRAMSize,
-		d,
+		display,
 		&StubKeyInputSource{},
 	)
 	if err != nil {
@@ -31,40 +31,58 @@ func mkEmu(t *testing.T) *Emulator {
 }
 
 func TestInstruction(t *testing.T) {
-	t.Run("clearScreen", testClearScreen)
-	t.Run("returnFromSub", testReturnFromSub)
-	t.Run("jumpNNN", testJumpNNN)
-	t.Run("callSubNNN", testCallSubNNN)
-	t.Run("add NN to X", testAddNNToX)
-	t.Run("set vx to random number mask with nn", testSetVXWithMask)
+	tests := []struct {
+		label string
+		fn    func(t *testing.T)
+	}{
+		{"clearScreen", testClearScreen},
+		{"returnFromSub", testReturnFromSub},
+		{"jumpNNN", testJumpNNN},
+		{"callSubNNN", testCallSubNNN},
+		{"add NN to X", testAddNNToX},
+		{"set vx to random number mask with nn", testSetVXWithMask},
+	}
+
+	for _, c := range tests {
+		t.Run(c.label, c.fn)
+	}
 }
 
 func testClearScreen(t *testing.T) {
+	t.Helper()
+
 	emu := mkEmu(t)
 
 	colorSet := emu.Display.ColorSet()
-	_ = Each(emu.Display, func(x, y int) error {
+	colorClear := emu.Display.ColorClear()
+
+	if err := Each(emu.Display, func(x, y int) error {
 		emu.Display.Set(x, y, colorSet)
 
 		return nil
-	})
+	}); err != nil {
+		t.Fatalf("Each: %v", err)
+	}
 
 	if err := emu.clearScreen(); err != nil {
 		t.Fatalf("error: %v", err)
 	}
 
-	colorClear := emu.Display.ColorClear()
-	_ = Each(emu.Display, func(x, y int) error {
+	if err := Each(emu.Display, func(x, y int) error {
 		at := emu.Display.At(x, y)
 		if !ColorEq(at, colorClear) {
 			t.Fatalf("(%d, %d) not clear", x, y)
 		}
 
 		return nil
-	})
+	}); err != nil {
+		t.Fatalf("Each: %v", err)
+	}
 }
 
 func testReturnFromSub(t *testing.T) {
+	t.Helper()
+
 	emu := mkEmu(t)
 
 	const testAddr = 0x111
@@ -82,6 +100,8 @@ func testReturnFromSub(t *testing.T) {
 }
 
 func testJumpNNN(t *testing.T) {
+	t.Helper()
+
 	emu := mkEmu(t)
 
 	const testAddr = 0x111
@@ -96,6 +116,8 @@ func testJumpNNN(t *testing.T) {
 }
 
 func testCallSubNNN(t *testing.T) {
+	t.Helper()
+
 	emu := mkEmu(t)
 
 	const (
@@ -124,6 +146,8 @@ func testCallSubNNN(t *testing.T) {
 }
 
 func testAddNNToX(t *testing.T) {
+	t.Helper()
+
 	emu := mkEmu(t)
 
 	const (
@@ -148,6 +172,8 @@ func testAddNNToX(t *testing.T) {
 }
 
 func testSetVXWithMask(t *testing.T) {
+	t.Helper()
+
 	emu := mkEmu(t)
 	// run 5 times, check if at least once the value was set
 	const (
