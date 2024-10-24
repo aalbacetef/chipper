@@ -1,3 +1,5 @@
+//go:build js && wasm
+
 package main
 
 import (
@@ -8,9 +10,8 @@ import (
 )
 
 type WebKeyInputSource struct {
-	keys [16]bool
-	mu   sync.Mutex
-	// mu       noopMutex
+	keys     [16]bool
+	mu       sync.Mutex
 	listener chan int
 }
 
