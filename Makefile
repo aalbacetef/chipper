@@ -21,7 +21,7 @@ build-wasm: mk-bin-dir fmt
 copy-wasm: build-wasm
 	cp ./bin/webui.wasm ./webui/public/
 
-web: copy-wasm
+web: copy-wasm copy-roms
 	cd webui && bun x vite build
 
 test: fmt test-go
@@ -38,6 +38,16 @@ dev: fmt
 type-check:
 	cd webui && bun x vue-tsc --build --force
 
+make-manifest:
+	./roms/manifest.fish
 
-.PHONY: build-emu build-dumprom lint dev test mk-bin-dir fmt web copy-wasm 
+copy-roms: make-manifest
+	rm -r ./webui/public/roms/
+	mkdir ./webui/public/roms
+	cp -r ./roms/set-* ./webui/public/roms/
+	cp ./roms/manifest.json ./webui/public/
+
+
+.PHONY: build-emu build-dumprom lint dev test mk-bin-dir fmt 
+.PHONY: web copy-wasm copy-roms make-manifest
 
