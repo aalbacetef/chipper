@@ -1,7 +1,6 @@
 package chipper
 
 import (
-	"context"
 	"errors"
 	"fmt"
 	"io"
@@ -27,21 +26,16 @@ type Emulator struct {
 	Stack           *Stack
 	RAM             []byte
 	Display         Display
-	cancelFns       []context.CancelFunc
 	LastInstruction Instruction
 	logger          *log.Logger
-	lastTick        time.Time
+	lastUpdate      time.Time
 }
 
 func (emu *Emulator) SetLogger(l *log.Logger) {
 	emu.logger = l
 }
 
-func (emu *Emulator) Close() {
-	for _, cancel := range emu.cancelFns {
-		cancel()
-	}
-}
+func (emu *Emulator) Close() { /* noop for now */ }
 
 func NewRAM(size int) ([]byte, error) {
 	if size <= 0 {
@@ -51,7 +45,7 @@ func NewRAM(size int) ([]byte, error) {
 	return make([]byte, size), nil
 }
 
-func NewEmulator(stackSize, ramSize int, d Display, keys KeyInputSource) (*Emulator, error) {
+func NewEmulator(stackSize, ramSize int, display Display, keys KeyInputSource) (*Emulator, error) {
 	stack, err := NewStack(stackSize)
 	if err != nil {
 		return nil, fmt.Errorf("could not create stack: %w", err)
@@ -67,7 +61,7 @@ func NewEmulator(stackSize, ramSize int, d Display, keys KeyInputSource) (*Emula
 		Stack:   stack,
 		RAM:     ram,
 		Keys:    keys,
-		Display: d,
+		Display: display,
 	}
 
 	if err := loadSprites(emu); err != nil {
@@ -77,14 +71,42 @@ func NewEmulator(stackSize, ramSize int, d Display, keys KeyInputSource) (*Emula
 	return emu, nil
 }
 
+// Load will read the ROM from the passed in io.Reader and load the sprites.
+func (emu *Emulator) Load(r io.Reader) error {
+	ramSize := len(emu.RAM)
+	maxSize := ramSize - StartAddress
+	p := make([]byte, maxSize)
+
+	bytesRead, err := r.Read(p)
+	if err != nil {
+		return fmt.Errorf("error reading ROM: %w", err)
+	}
+
+	p = p[:bytesRead]
+
+	for k, b := range p {
+		emu.RAM[int(StartAddress)+k] = b
+	}
+
+	return nil
+}
+
+// subtractTimers is our routine for reducing the timers. It is meant to run at 60Hz (~16ms).
 func (emu *Emulator) subtractTimers() {
-	period := time.Millisecond * 16
-	elapsed := time.Since(emu.lastTick)
-	if elapsed < period {
+	const timerPeriod = 16 * time.Millisecond
+
+	if emu.lastUpdate.IsZero() || time.Since(emu.lastUpdate) < timerPeriod {
 		return
 	}
 
-	times := elapsed / period
+	elapsed := time.Since(emu.lastUpdate)
+	if elapsed < timerPeriod {
+		return
+	}
+
+	emu.lastUpdate = time.Now()
+
+	times := elapsed / timerPeriod
 	sub := int(times)
 
 	if emu.DelayTimer > 0 {
@@ -92,6 +114,7 @@ func (emu *Emulator) subtractTimers() {
 		if dt < 0 {
 			dt = 0
 		}
+
 		emu.DelayTimer = byte(dt)
 	}
 
@@ -100,14 +123,15 @@ func (emu *Emulator) subtractTimers() {
 		if st < 0 {
 			st = 0
 		}
+
 		emu.SoundTimer = byte(st)
 	}
 }
 
-// Tick .
+// Tick is the core Fetch-Decode-Execute loop of the emulator.
 func (emu *Emulator) Tick() error {
-	if emu.lastTick.IsZero() {
-		emu.lastTick = time.Now()
+	if emu.lastUpdate.IsZero() {
+		emu.lastUpdate = time.Now()
 	}
 
 	emu.subtractTimers()
@@ -118,13 +142,13 @@ func (emu *Emulator) Tick() error {
 	}
 
 	logger.Println("fetch")
+
 	instrBytes, err := emu.Fetch(InstructionSize)
 	if errors.Is(err, io.EOF) {
 		return fmt.Errorf("reached last instruction: %w", io.EOF)
 	}
 
 	if err != nil {
-		log.Printf("error fetching: %v", err)
 		return fmt.Errorf("error fetching instruction: %w", err)
 	}
 
@@ -136,11 +160,10 @@ func (emu *Emulator) Tick() error {
 	// decode
 	instr, err := Decode(instrBytes)
 	if err != nil {
-		log.Printf("error decoding: %v", err)
-		fmt.Println("could not decode : ", err)
 		return fmt.Errorf("could not decode instruction: %w", err)
 	}
 
+	// store the last instruction, useful for debugging
 	emu.LastInstruction = instr
 
 	logger.Println("executing instruction: ", instr.String())
@@ -148,15 +171,13 @@ func (emu *Emulator) Tick() error {
 	// execute
 	execErr := emu.Execute(instr)
 	if execErr != nil {
-		logger.Printf("error executing: %v", err)
-		fmt.Println("could not execute: ", err)
 		return execErr
 	}
 
 	return nil
 }
 
-// fetch .
+// Fetch will read the instruction pointed at by the PC. It will do a bounds check.
 func (emu *Emulator) Fetch(numBytes int) ([]byte, error) {
 	pc := int(emu.PC)
 	ramSize := len(emu.RAM)
@@ -174,28 +195,4 @@ func (emu *Emulator) Fetch(numBytes int) ([]byte, error) {
 	}
 
 	return read, nil
-}
-
-// Load .
-func (emu *Emulator) Load(r io.Reader) error {
-	if err := loadSprites(emu); err != nil {
-		return fmt.Errorf("could not load sprites: %w", err)
-	}
-
-	ramSize := len(emu.RAM)
-	maxSize := ramSize - StartAddress
-	p := make([]byte, maxSize)
-
-	bytesRead, err := r.Read(p)
-	if err != nil {
-		return fmt.Errorf("error reading ROM: %w", err)
-	}
-
-	p = p[:bytesRead]
-
-	for k, b := range p {
-		emu.RAM[int(StartAddress)+k] = b
-	}
-
-	return nil
 }

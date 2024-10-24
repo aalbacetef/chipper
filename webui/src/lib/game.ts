@@ -3,13 +3,14 @@
 
 type CanvasContext = CanvasRenderingContext2D | OffscreenCanvasRenderingContext2D;
 
-// @TODO: reuse buffer instead of declaring a new one.
-// @TODO: run should probably be passed to request animation frame
-// @TODO: wrap get display calls in a buffer
+export type Color = [number, number, number, number];
+export type Dims = [number, number];
+export type ColorOptions = { set: Color, clear: Color }
+
 // @TODO: flexible scale factor for different kinds of screens (e.g: mobile).
-export function render(ctx: CanvasContext, w: number, h: number): void {
+export function render(buf: Uint8Array, ctx: CanvasContext, dims: Dims, colors: ColorOptions): void {
+  const [w, h] = dims;
   const n = w * h;
-  const buf = new Uint8Array(n);
   const copied = GetDisplay(buf);
 
   if (copied !== n) {
@@ -17,79 +18,73 @@ export function render(ctx: CanvasContext, w: number, h: number): void {
     return;
   }
 
-  const imgData = drawImage(ctx, buf, w, h);
-  ctx.clearRect(0, 0, w * 10, h * 10);
+  const imgData = drawImage(ctx, buf, dims, colors);
 
-  createImageBitmap(
-    imgData,
-    {
-      resizeWidth: w * 10,
-      resizeHeight: h * 10,
-      resizeQuality: "pixelated",
-    },
-  )
+  const opts: ImageBitmapOptions = {
+    resizeWidth: w * 10,
+    resizeHeight: h * 10,
+    resizeQuality: "pixelated",
+  };
+
+  createImageBitmap(imgData, opts)
     .then(bitmap => {
       ctx.drawImage(bitmap, 0, 0);
     });
 }
 
 
-const setColor = [10, 200, 10, 150]
+const clearValue = 0;
 
-function drawImage(ctx: CanvasContext, buf: Uint8Array, w: number, h: number): ImageData {
+
+// drawImage will take the display data and generate an ImageData to draw on the canvas. 
+function drawImage(ctx: CanvasContext, buf: Uint8Array, dims: Dims, colors: ColorOptions): ImageData {
+  const [w, h] = dims;
   const imgData = ctx.createImageData(w, h);
   const data = imgData.data;
   const n = buf.length;
 
   for (let k = 0; k < n; k++) {
     const index = k * 4;
-    if (buf[k] === 0) {
-      continue;
+
+    let color = colors.set;
+    if (buf[k] === clearValue) {
+      color = colors.clear;
     }
 
     for (let j = 0; j < 4; j++) {
-      data[index + j] = setColor[j];
+      data[index + j] = color[j];
     }
   }
 
   return imgData;
 }
 
-type KeyMap = {
-  [key: string]: number;
-}
+export const KeyMap: Record<string, number> = {
+  "KeyV": 0,
+  "Digit1": 1,
+  "Digit2": 2,
+  "Digit3": 3,
+  "Digit4": 4,
+  "KeyQ": 5,
+  "KeyW": 6,
+  "KeyE": 7,
+  "KeyR": 8,
+  "KeyA": 9,
+  "KeyS": 10,
+  "KeyD": 11,
+  "KeyF": 12,
+  "KeyZ": 13,
+  "KeyX": 14,
+  "KeyC": 15,
+};
 
-function kkey(s: string): string {
-  const digit = /[0-9]/
-  const letter = /[a-zA-Z]/
-  if (digit.test(s)) { return 'Digit' + s }
-  if (letter.test(s)) { return 'Key' + s }
-
-  return s;
-}
-
-function loadKeyMap(): KeyMap {
-  const keys = [
-    'V', '1', '2', '3', '4',
-    'Q', 'W', 'E', 'R',
-    'A', 'S', 'D', 'F',
-    'Z', 'X', 'C',
-  ].map(s => kkey(s));
-
-
-  const o = {};
-  keys.forEach((key, index) => o[key] = index);
-
-  return o;
-}
 
 export function mapKeyToHex(s: string): number {
-  const keyMap = loadKeyMap();
-  if (typeof keyMap[s] === 'undefined') {
+  if (typeof KeyMap[s] === 'undefined') {
     throw new MissingKeyError(s);
   }
 
-  return keyMap[s];
+  return KeyMap[s];
 }
 
 class MissingKeyError extends Error {

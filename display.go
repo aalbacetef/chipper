@@ -18,8 +18,8 @@ type Display interface {
 func Each(d Display, fn func(int, int) error) error {
 	b := d.Bounds()
 
-	for x := b.Min.X; x < b.Max.X; x++ {
-		for y := b.Min.Y; y < b.Max.Y; y++ {
+	for y := b.Min.Y; y < b.Max.Y; y++ {
+		for x := b.Min.X; x < b.Max.X; x++ {
 			if err := fn(x, y); err != nil {
 				return err
 			}

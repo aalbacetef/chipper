@@ -1,3 +1,5 @@
+//go:build js && wasm
+
 package main
 
 import (
@@ -16,13 +18,7 @@ type Display struct {
 	data    []byte
 	palette color.Palette
 	mu      sync.Mutex
-	// mu noopMutex
 }
-
-type noopMutex struct{}
-
-func (noopMutex) Lock()   {}
-func (noopMutex) Unlock() {}
 
 func NewDisplay(w, h int) *Display {
 	data := make([]byte, w*h)

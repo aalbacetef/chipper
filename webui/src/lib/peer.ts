@@ -14,6 +14,12 @@ import {
   type KeyEvent,
 } from "@/lib/messages";
 
+
+const RunOnce = true;
+
+type StateChangeCB = (state: Event) => void;
+
+// WorkerPeer provides a set of methods to interact with the Worker from the main client code.
 export class WorkerPeer {
   worker: Worker;
   callbacks: {
@@ -42,7 +48,7 @@ export class WorkerPeer {
   }
 
   loadROM(filename: string): void {
-    this.on(Event.ROMLoaded, () => console.log('rom loaded'), true);
+    this.on(Event.ROMLoaded, () => console.log('rom loaded'), RunOnce);
 
     this.postMessage<LoadROM>({
       type: MessageType.LoadROM,
@@ -53,7 +59,7 @@ export class WorkerPeer {
   }
 
   startEmu(): void {
-    this.on(Event.EmuStarted, () => console.log('emu started'), true);
+    this.on(Event.EmuStarted, () => console.log('emu started'), RunOnce);
 
     this.postMessage<StartEmu>({
       type: MessageType.StartEmu,
@@ -149,6 +155,5 @@ export class WorkerPeer {
   }
 }
 
-type StateChangeCB = (state: Event) => void;
 
 

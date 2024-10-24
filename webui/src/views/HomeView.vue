@@ -50,7 +50,6 @@ const selectedRomIndex = ref<number>(0);
 const workerPeer = inject<WorkerPeer>("workerPeer");
 
 function handleLoadROMButton() {
-  console.log('selectedRomIndex:', selectedRomIndex.value);
   const rom = roms[selectedRomIndex.value];
   workerPeer.loadROM(rom.path);
 }
