@@ -47,7 +47,10 @@ copy-roms: make-manifest
 	cp -r ./roms/set-* ./webui/public/roms/
 	cp ./roms/manifest.json ./webui/public/
 
+web-test:
+	cd ./webui && bun x vitest
+
 
 .PHONY: build-emu build-dumprom lint dev test mk-bin-dir fmt 
-.PHONY: web copy-wasm copy-roms make-manifest
+.PHONY: web copy-wasm copy-roms make-manifest web-test
 
