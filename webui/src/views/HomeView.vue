@@ -1,37 +1,31 @@
 <script setup lang="ts">
 import { inject, ref } from "vue";
 import { WorkerPeer } from "@/lib/peer";
-import { type Color, mapKeyToHex, hexToRGBA, defaultColors } from '@/lib/game';
+import { loadROMManifest, type ROMEntry, mapKeyToHex, hexToRGBA, defaultColors } from '@/lib/game';
+import { loadAudioManifest, type AudioManifest } from "@/lib/music";
 
+import AudioPlayer from "@/components/AudioPlayer.vue";
 import DrawArea from "@/components/DrawArea.vue";
 import ColorPicker from "@/components/ColorPicker.vue";
 
-const manifestURL = "/manifest.json"
 
-type RomManifestEntry = {
-  name: string;
-  path: string;
-}
 
-const roms = ref<RomManifestEntry[]>([]);
+const roms = ref<ROMEntry[]>([]);
 const loading = ref<boolean>(true);
+const audioManifest = ref<AudioManifest>();
 
 let colorSet = defaultColors.set;
 let colorClear = defaultColors.clear;
 
-fetch(manifestURL)
-  .then(res => res.json())
-  .then((data: Record<string, string>) => {
-    roms.value = [];
+loadAudioManifest()
+  .then(m => audioManifest.value = m)
+  .catch(err => console.error('failed to load audio manifest: ', err));
 
-    Object.keys(data).forEach(name => {
-      const row = { name, path: data[name] };
-      roms.value.push(row);
-    });
-
-    loading.value = false;
+loadROMManifest
+  .then(data => {
+    roms.value = data; loading.value = false;
   })
-  .catch(err => console.error('failed to load rom: ', err));
+  .catch(err => console.error('failed to load rom manifest: ', err));
 
 const selectedRomIndex = ref<number>(0);
 
@@ -39,7 +33,7 @@ const workerPeer = inject<WorkerPeer>("workerPeer");
 
 function handleLoadROMButton() {
   const rom = roms.value[selectedRomIndex.value];
-  workerPeer.loadROM("/" + rom.path);
+  workerPeer.loadROM(rom.path);
 }
 
 function handleStartButton() {
@@ -135,6 +129,8 @@ function updateColor(args: [string, string]) {
         <DrawArea />
       </div>
     </div>
+
+    <AudioPlayer :manifest="audioManifest" v-if="audioManifest !== null && typeof audioManifest !== 'undefined'" />
   </main>
 </template>
 

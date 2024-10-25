@@ -1,8 +1,10 @@
 @import "./normalize.css";
 
 :root {
-  --bg-color: #5499d0;
-  --fg-color: #efe2e2;
+  --bg-color: #080808;
+  --fg-color: #8acf31;
+  --neon-purple: #d11b80;
+  --font: "VT323", monospace;
   --margin: 10px;
   --padding-btn: 5px 10px;
   --button-bg-color: #efefef;
@@ -20,7 +22,7 @@ canvas {
 }
 
 * {
-  font-family: "Oxanium", sans-serif;
+  font-family: var(--font);
   font-optical-sizing: auto;
   box-sizing: border-box;
 }
@@ -34,8 +36,14 @@ body {
   color: var(--fg-color);
 }
 
+#app {
+  width: fit-content;
+  height: 100%;
+  margin: 0 auto;
+}
+
 button {
-  border: solid black 1px;
+  border: solid var(--button-bg-color) 1px;
   padding: var(--padding-btn);
   background-color: var(--button-bg-color);
 }

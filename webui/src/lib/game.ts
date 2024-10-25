@@ -7,6 +7,28 @@ export type Dims = [number, number];
 export type Color = [number, number, number, number];
 export type ColorOptions = { set: Color, clear: Color }
 
+export type ROMEntry = {
+  name: string;
+  path: string;
+}
+
+const manifestURL = 'roms/manifest.json';
+
+export function loadROMManifest(): Promise<ROMEntry[]> {
+  return fetch(manifestURL)
+    .then(res => res.json())
+    .then((data: Record<string, string>) => {
+      const roms: ROMEntry[] = [];
+
+      Object.keys(data).forEach(name => {
+        const entry = { name, path: data[name] };
+        roms.push(entry);
+      });
+
+      return roms;
+    })
+}
+
 export const defaultColors: ColorOptions = {
   set: [10, 200, 10, 150],
   clear: [0, 0, 0, 255],
