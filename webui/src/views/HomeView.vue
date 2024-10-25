@@ -1,14 +1,12 @@
 <script setup lang="ts">
-import { inject, ref } from "vue";
-import { WorkerPeer } from "@/lib/peer";
+import { inject, ref } from 'vue';
+import { WorkerPeer } from '@/lib/peer';
 import { loadROMManifest, type ROMEntry, mapKeyToHex, hexToRGBA, defaultColors } from '@/lib/game';
-import { loadAudioManifest, type AudioManifest } from "@/lib/music";
+import { loadAudioManifest, type AudioManifest } from '@/lib/music';
 
-import AudioPlayer from "@/components/AudioPlayer.vue";
-import DrawArea from "@/components/DrawArea.vue";
-import ColorPicker from "@/components/ColorPicker.vue";
-
-
+import AudioPlayer from '@/components/AudioPlayer.vue';
+import DrawArea from '@/components/DrawArea.vue';
+import ColorPicker from '@/components/ColorPicker.vue';
 
 const roms = ref<ROMEntry[]>([]);
 const loading = ref<boolean>(true);
@@ -18,18 +16,19 @@ let colorSet = defaultColors.set;
 let colorClear = defaultColors.clear;
 
 loadAudioManifest()
-  .then(m => audioManifest.value = m)
-  .catch(err => console.error('failed to load audio manifest: ', err));
+  .then((m) => (audioManifest.value = m))
+  .catch((err) => console.error('failed to load audio manifest: ', err));
 
 loadROMManifest()
-  .then(data => {
-    roms.value = data; loading.value = false;
+  .then((data) => {
+    roms.value = data;
+    loading.value = false;
   })
-  .catch(err => console.error('failed to load rom manifest: ', err));
+  .catch((err) => console.error('failed to load rom manifest: ', err));
 
 const selectedRomIndex = ref<number>(0);
 
-const workerPeer = inject<WorkerPeer>("workerPeer");
+const workerPeer = inject<WorkerPeer>('workerPeer');
 
 function handleLoadROMButton() {
   const rom = roms.value[selectedRomIndex.value];
@@ -73,10 +72,10 @@ function updateColor(args: [string, string]) {
 
   const color = hexToRGBA(colorHex);
   switch (name) {
-    case "set":
+    case 'set':
       colorSet = color;
       break;
-    case "clear":
+    case 'clear':
       colorClear = color;
       break;
   }
@@ -87,50 +86,48 @@ function updateColor(args: [string, string]) {
 
 <template>
   <main>
-    <div class="loading" v-if="loading">
-      loading
-    </div>
+    <div class="loading" v-if="loading">loading</div>
     <div class="view--wrapper" v-if="!loading">
       <div class="control-panel">
         <div class="rom-loader">
-
           <select v-model="selectedRomIndex">
-            <option v-for="(rom, index) in roms" :key="rom.path" :value="index">{{ rom.name }}</option>
+            <option v-for="(rom, index) in roms" :key="rom.path" :value="index">
+              {{ rom.name }}
+            </option>
           </select>
 
-          <button @click="handleLoadROMButton">
-            Load ROM
-          </button>
+          <button @click="handleLoadROMButton">Load ROM</button>
         </div>
 
         <div class="color-control">
-          <p>pick color: </p>
+          <p>pick color:</p>
           <ColorPicker name="set" display="foreground" @update="updateColor" />
           <ColorPicker name="clear" display="background" @update="updateColor" />
         </div>
 
         <div class="emu-control">
-          <button @click="handleStartButton">
-            Start
-          </button>
+          <button @click="handleStartButton">Start</button>
 
-          <button @click="handleStopButton">
-            Stop
-          </button>
+          <button @click="handleStopButton">Stop</button>
 
-          <button @click="handleRestartButton">
-            Restart
-          </button>
+          <button @click="handleRestartButton">Restart</button>
         </div>
-
       </div>
 
-      <div class="game-area" tabindex="0" @keydown.prevent="handleKeyDown" @keyup.prevent="handleKeyUp">
+      <div
+        class="game-area"
+        tabindex="0"
+        @keydown.prevent="handleKeyDown"
+        @keyup.prevent="handleKeyUp"
+      >
         <DrawArea />
       </div>
     </div>
 
-    <AudioPlayer :manifest="audioManifest" v-if="audioManifest !== null && typeof audioManifest !== 'undefined'" />
+    <AudioPlayer
+      :manifest="audioManifest"
+      v-if="audioManifest !== null && typeof audioManifest !== 'undefined'"
+    />
   </main>
 </template>
 

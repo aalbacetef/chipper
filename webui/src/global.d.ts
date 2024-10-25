@@ -1,6 +1,6 @@
-import type { KeyDirection } from "./lib/messages";
+import type { KeyDirection } from './lib/messages';
 
-declare declare global {
+declare global {
   class Go {
     constructor();
     run(instance: WebAssembly.Instance): void;
@@ -17,4 +17,3 @@ declare declare global {
   function GetDisplay(buf: Uint8Array): number;
   function SendKeyboardEvent(key: number, repeat: boolean, direction: KeyDirection): void;
 }
-

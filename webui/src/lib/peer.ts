@@ -1,10 +1,4 @@
-import {
-  MessageType,
-  Event,
-  type StopEmu,
-  type RestartEmu,
-  type SetColors,
-} from "@/lib/messages";
+import { MessageType, Event, type StopEmu, type RestartEmu, type SetColors } from '@/lib/messages';
 
 import {
   KeyDirection,
@@ -15,9 +9,8 @@ import {
   type WorkerEvent,
   type StartEmu,
   type KeyEvent,
-} from "@/lib/messages";
-import type { ColorOptions } from "./game";
-
+} from '@/lib/messages';
+import type { ColorOptions } from './game';
 
 const RunOnce = true;
 
@@ -36,12 +29,9 @@ export class WorkerPeer {
   offscreenCanvas?: OffscreenCanvas;
   onscreenCanvas?: HTMLCanvasElement;
 
-
   constructor(worker: Worker) {
     this.worker = worker;
-    this.worker.addEventListener(
-      "message", (msg) => this.handleMessage(msg.data),
-    );
+    this.worker.addEventListener('message', (msg) => this.handleMessage(msg.data));
   }
 
   loadWASM(filename: string): void {
@@ -58,7 +48,7 @@ export class WorkerPeer {
       type: MessageType.LoadROM,
       data: {
         filename, // @TODO: implement support for this
-      }
+      },
     });
   }
 
@@ -109,7 +99,7 @@ export class WorkerPeer {
       type: MessageType.TransferOffscreenCanvas,
       data: {
         canvas: this.offscreenCanvas,
-      }
+      },
     };
 
     this.worker.postMessage(msg, [this.offscreenCanvas]);
@@ -130,8 +120,8 @@ export class WorkerPeer {
         key,
         repeat,
         direction,
-      }
-    })
+      },
+    });
   }
 
   postMessage<T>(msg: T): void {
@@ -148,7 +138,7 @@ export class WorkerPeer {
       return;
     }
 
-    this.callbacks[state]!.forEach(cb => cb(state));
+    this.callbacks[state]!.forEach((cb) => cb(state));
   }
 
   runOneOffs(state: Event) {
@@ -156,7 +146,7 @@ export class WorkerPeer {
       return;
     }
 
-    this.oneoffs[state]!.forEach(cb => cb(state));
+    this.oneoffs[state]!.forEach((cb) => cb(state));
     this.oneoffs[state] = [];
   }
 
@@ -185,6 +175,3 @@ export class WorkerPeer {
     target[state]!.push(cb);
   }
 }
-
-
-

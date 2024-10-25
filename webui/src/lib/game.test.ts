@@ -17,5 +17,4 @@ describe('color', () => {
     const got = RGBAToHex(rgba);
     expect(got).toBe(hex);
   });
-
-})
+});

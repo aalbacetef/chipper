@@ -1,10 +1,21 @@
 import { defaultColors, render, type ColorOptions, type Dims } from '@/lib/game';
-import type { GenericMessage, KeyEvent, LoadROM, LoadWASM, RestartEmu, SetColors, StartEmu, StopEmu, TransferOffscreenCanvas, WorkerEvent } from '@/lib/messages';
-import { MessageType, Event } from "@/lib/messages";
+import type {
+  GenericMessage,
+  KeyEvent,
+  LoadROM,
+  LoadWASM,
+  RestartEmu,
+  SetColors,
+  StartEmu,
+  StopEmu,
+  TransferOffscreenCanvas,
+  WorkerEvent,
+} from '@/lib/messages';
+import { MessageType, Event } from '@/lib/messages';
 import { loadWASM, type WASMLoadResult } from '@/lib/wasm';
 
 // ensure wasm glue code for Go is registered in the worker.
-import "@/worker/wasm_exec.js";
+import '@/worker/wasm_exec.js';
 
 export function initialize() {
   registerHandlers();
@@ -14,16 +25,14 @@ export function initialize() {
 const emulatorConstants = {
   w: 64,
   h: 32,
-}
+};
 
-
-// WorkerInstance implements the core functionality of our Web Worker 
+// WorkerInstance implements the core functionality of our Web Worker
 // in which we run our WASM emulator.
 class WorkerInstance {
   result?: WASMLoadResult;
   canvas?: OffscreenCanvas;
   colors: ColorOptions = defaultColors;
-
 
   startRendering(): void {
     console.log('startRendering');
@@ -80,24 +89,23 @@ class WorkerInstance {
   }
 
   handleLoadWASM(msg: LoadWASM): void {
-    loadWASM(msg.data.filename)
-      .then(result => {
-        this.result = result;
-        notifyStateChange(Event.WASMLoaded);
-      });
+    loadWASM(msg.data.filename).then((result) => {
+      this.result = result;
+      notifyStateChange(Event.WASMLoaded);
+    });
   }
 
   handleLoadROM(msg: LoadROM): void {
     const filename = msg.data.filename;
     fetch(filename)
-      .then(r => {
-        return r.arrayBuffer()
-      }).then(buf => {
+      .then((r) => {
+        return r.arrayBuffer();
+      })
+      .then((buf) => {
         const arr = new Uint8Array(buf);
 
         LoadROM(arr, arr.byteLength);
         notifyStateChange(Event.ROMLoaded);
-
       });
   }
 
@@ -122,7 +130,6 @@ class WorkerInstance {
     notifyStateChange(Event.SetColors);
   }
 
-
   handleTransferOffscreenCanvas(msg: TransferOffscreenCanvas): void {
     const canvas = msg.data.canvas;
     this.canvas = canvas;
@@ -136,15 +143,12 @@ class WorkerInstance {
 }
 
 function registerHandlers() {
-  console.log("registering handlers...");
+  console.log('registering handlers...');
   const worker = new WorkerInstance();
 
-  self.addEventListener(
-    "message",
-    (event) => {
-      worker.handleMessage(event.data as GenericMessage);
-    },
-  );
+  self.addEventListener('message', (event) => {
+    worker.handleMessage(event.data as GenericMessage);
+  });
 
   notifyStateChange(Event.WorkerLoaded, 100);
 }
@@ -154,7 +158,7 @@ function notifyStateChange(state: Event, delay?: number): void {
     type: MessageType.WorkerEvent,
     data: {
       state,
-    }
+    },
   };
 
   if (typeof delay !== 'undefined') {
@@ -164,5 +168,3 @@ function notifyStateChange(state: Event, delay?: number): void {
 
   self.postMessage(message);
 }
-
-

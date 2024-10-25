@@ -1,10 +1,10 @@
 <script setup lang="ts">
-import { computed, onMounted, ref } from "vue";
-import { type AudioManifest } from "@/lib/music"
+import { computed, onMounted, ref } from 'vue';
+import { type AudioManifest } from '@/lib/music';
 
 type Props = {
   manifest: AudioManifest;
-}
+};
 
 const props = defineProps<Props>();
 const manifest = props.manifest;
@@ -15,9 +15,9 @@ const audioElem = ref<HTMLAudioElement>();
 onMounted(() => {
   const album = manifest.album;
   if (album.songs.length === 0) {
-    throw new Error("empty album");
+    throw new Error('empty album');
   }
-})
+});
 
 function playSong() {
   console.log('audioElem: ', audioElem.value);
@@ -57,7 +57,7 @@ const currentSong = computed(() => {
   }
 
   return manifest.album.songs[index];
-}); 
+});
 </script>
 
 <template>

@@ -17,16 +17,15 @@ const chosenColor = ref<Color>('#000000');
 onMounted(() => {
   let v = chosenColor.value;
   switch (props.name) {
-    case "set":
+    case 'set':
       v = RGBAToHex(defaultColors.set);
       break;
-    case "clear":
+    case 'clear':
       v = RGBAToHex(defaultColors.clear);
       break;
   }
   chosenColor.value = v;
 });
-
 
 function handleInput(event) {
   emit('update', [props.name, event.target.value]);
