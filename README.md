@@ -8,5 +8,5 @@ In this repo you'll also find a Vue app which embeds the emulator via WASM, allo
 ## Roadmap 
 
 - [ ] flesh out README
-- [ ] finish writing tests for the entire instruction test
+- [ ] finish writing tests for the entire instruction set
 - [ ] improve the Web UI with keymap information + configuration
