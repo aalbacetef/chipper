@@ -189,6 +189,11 @@ linters-settings:
       - ch
       - op
       - db
+      - nn
+      - vx
+      - vy
+      - x
+      - y
     ignore-decls:
       - c echo.Context
       - t *testing.T
