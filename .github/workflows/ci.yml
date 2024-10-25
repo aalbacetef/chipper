@@ -10,7 +10,7 @@ permissions:
   contents: read 
 
 jobs:
-  lint:
+  lint-go:
     runs-on: ubuntu-latest
     timeout-minutes: 2
     steps:
@@ -22,7 +22,25 @@ jobs:
         with:
           version: v1.54
 
-  test:
+  lint-vue:
+    runs-on: ubuntu-latest
+    timeout-minutes: 2
+    steps:
+      - uses: actions/checkout@v4
+      - uses: oven-sh/setup-bun@v2
+      - run: cd webui && bun i
+      - run: make web-lint
+  
+  test-vue:
+    runs-on: ubuntu-latest
+    timeout-minutes: 2
+    steps:
+      - uses: actions/checkout@v4
+      - uses: oven-sh/setup-bun@v2
+      - run: cd webui && bun i
+      - run: make web-test
+
+  test-go:
     runs-on: ubuntu-latest
     timeout-minutes: 2
     steps:
