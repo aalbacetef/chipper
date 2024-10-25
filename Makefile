@@ -19,6 +19,7 @@ build-wasm: mk-bin-dir fmt
 	GOOS=$(GOOS) GOARCH=$(GOARCH) go build -o bin/webui.wasm ./cmd/webui/ 
 
 copy-wasm: build-wasm
+	mkdir -p ./webui/public
 	cp ./bin/webui.wasm ./webui/public/
 
 web: copy-wasm copy-roms
@@ -42,7 +43,7 @@ make-manifest:
 	./roms/manifest.fish
 
 copy-roms: make-manifest
-	rm -r ./webui/public/roms/
+	rm -rf ./webui/public/roms/
 	mkdir ./webui/public/roms
 	cp -r ./roms/set-* ./webui/public/roms/
 	cp ./roms/manifest.json ./webui/public/
