@@ -25,6 +25,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: oven-sh/setup-bun@v2
+      - uses: fish-actions/install-fish@v1.1.0
       - run: cd webui && bun i && cd -
       - run: go install golang.org/x/tools/cmd/goimports@latest
       - run: |
