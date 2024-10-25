@@ -21,7 +21,7 @@ loadAudioManifest()
   .then(m => audioManifest.value = m)
   .catch(err => console.error('failed to load audio manifest: ', err));
 
-loadROMManifest
+loadROMManifest()
   .then(data => {
     roms.value = data; loading.value = false;
   })
