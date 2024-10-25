@@ -1,0 +1,20 @@
+{
+  "album": {
+    "artist": "Karl Casey",
+    "attribution": "Music by Karl Casey @ White Bat Audio",
+    "name": "White Bat 37",
+    "cover": "audio/cover.jpg",
+    "songs": [
+      {
+        "name": "Disorder", 
+        "position": 1,
+        "path": "audio/01 Disorder.mp3"
+      },
+      {
+        "name": "Calling You",
+        "position": 2,
+        "path": "audio/02 Calling You.mp3"
+      }
+    ]
+  }
+}
