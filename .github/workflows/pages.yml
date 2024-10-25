@@ -26,6 +26,7 @@ jobs:
       - uses: actions/checkout@v4
       - uses: oven-sh/setup-bun@v2
       - run: cd webui && bun i && cd -
+      - run: go install golang.org/x/tools/cmd/goimports@latest
       - run: make web
       - uses: actions/configure-pages@v4
       - uses: actions/upload-pages-artifact@v3
