@@ -19,7 +19,7 @@ func main() {
 		RAMSize    = 4*1024 + 1
 		w          = 64
 		h          = 32
-		tickPeriod = 16 * time.Millisecond
+		tickPeriod = 2 * time.Millisecond
 	)
 
 	ctx, cancel := context.WithCancel(context.Background())
