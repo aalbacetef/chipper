@@ -33,7 +33,9 @@ const workerPeer = inject<WorkerPeer>("workerPeer");
 
 function handleLoadROMButton() {
   const rom = roms.value[selectedRomIndex.value];
-  workerPeer.loadROM(rom.path);
+  const baseURL = window.location.origin + window.location.pathname;
+  const romURL = new URL(rom.path, baseURL);
+  workerPeer.loadROM(romURL.toString());
 }
 
 function handleStartButton() {
