@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { computed, onMounted, ref } from 'vue';
-import { type AudioManifest } from '@/lib/music';
+import { type AudioManifest, type Song } from '@/lib/music';
 
 type Props = {
   manifest: AudioManifest;
@@ -20,15 +20,14 @@ onMounted(() => {
 });
 
 function playSong() {
-  console.log('audioElem: ', audioElem.value);
-  audioElem.value.play();
+  audioElem.value?.play();
 }
 
 function playNext() {
   pauseAudio();
   const n = manifest.album.songs.length;
   currentSongIndex.value = (currentSongIndex.value + 1) % n;
-  audioElem.value.load();
+  audioElem.value!.load();
   playSong();
 }
 
@@ -41,19 +40,19 @@ function playPrev() {
 
   currentSongIndex.value = index;
 
-  audioElem.value.load();
+  audioElem.value!.load();
   playSong();
 }
 
 function pauseAudio() {
-  audioElem.value.pause();
+  audioElem.value?.pause();
 }
 
-const currentSong = computed(() => {
+const currentSong = computed<Song>(() => {
   const index = currentSongIndex.value;
   const n = manifest.album.songs.length;
   if (index >= n || index < 0) {
-    return { path: '' };
+    return { path: '', position: 0, name: '' };
   }
 
   return manifest.album.songs[index];

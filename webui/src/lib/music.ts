@@ -5,6 +5,7 @@ export type Song = {
 };
 
 export type Album = {
+  attribution: string;
   artist: string;
   name: string;
   songs: Song[];

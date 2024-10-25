@@ -34,40 +34,40 @@ function handleLoadROMButton() {
   const rom = roms.value[selectedRomIndex.value];
   const baseURL = window.location.origin + window.location.pathname;
   const romURL = new URL(rom.path, baseURL);
-  workerPeer.loadROM(romURL.toString());
+  workerPeer!.loadROM(romURL.toString());
 }
 
 function handleStartButton() {
-  workerPeer.startEmu();
+  workerPeer!.startEmu();
 }
 
 function handleStopButton() {
-  workerPeer.stopEmu();
+  workerPeer!.stopEmu();
 }
 
 function handleRestartButton() {
-  workerPeer.restartEmu();
+  workerPeer!.restartEmu();
 }
 
-function handleKeyDown(event) {
+function handleKeyDown(event: KeyboardEvent) {
   try {
     const key = mapKeyToHex(event.code);
-    workerPeer.sendKeyDown(key, event.repeat);
+    workerPeer!.sendKeyDown(key, event.repeat);
   } catch (err) {
     console.log(err);
   }
 }
 
-function handleKeyUp(event) {
+function handleKeyUp(event: KeyboardEvent) {
   try {
     const key = mapKeyToHex(event.code);
-    workerPeer.sendKeyUp(key, event.repeat);
+    workerPeer!.sendKeyUp(key, event.repeat);
   } catch (err) {
     console.log(err);
   }
 }
 
-function updateColor(args: [string, string]) {
+function updateColor(args: [string, string]): void {
   const [name, colorHex] = args;
 
   const color = hexToRGBA(colorHex);
@@ -80,7 +80,7 @@ function updateColor(args: [string, string]) {
       break;
   }
 
-  workerPeer.setColors({ set: colorSet, clear: colorClear });
+  workerPeer!.setColors({ set: colorSet, clear: colorClear });
 }
 </script>
 
@@ -114,20 +114,12 @@ function updateColor(args: [string, string]) {
         </div>
       </div>
 
-      <div
-        class="game-area"
-        tabindex="0"
-        @keydown.prevent="handleKeyDown"
-        @keyup.prevent="handleKeyUp"
-      >
+      <div class="game-area" tabindex="0" @keydown.prevent="handleKeyDown" @keyup.prevent="handleKeyUp">
         <DrawArea />
       </div>
     </div>
 
-    <AudioPlayer
-      :manifest="audioManifest"
-      v-if="audioManifest !== null && typeof audioManifest !== 'undefined'"
-    />
+    <AudioPlayer :manifest="audioManifest" v-if="audioManifest !== null && typeof audioManifest !== 'undefined'" />
   </main>
 </template>
 
