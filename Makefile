@@ -1,5 +1,6 @@
 all: build-emu build-dumprom 
 
+
 fmt:
 	goimports -w .
 
@@ -46,7 +47,7 @@ copy-roms: make-manifest
 	rm -rf ./webui/public/roms/
 	mkdir ./webui/public/roms
 	cp -r ./roms/set-* ./webui/public/roms/
-	cp ./roms/manifest.json ./webui/public/
+	cp ./roms/manifest.json ./webui/public/roms/
 
 web-test:
 	cd ./webui && bun x vitest
