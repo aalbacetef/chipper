@@ -7,6 +7,10 @@ In this repo you'll also find a Vue app which embeds the emulator via WASM, allo
 
 ## Roadmap 
 
+This is mostly for myself, just a set of TO-DOs for improving the code now that chipper hit MVP.
+
 - [ ] flesh out README
 - [ ] finish writing tests for the entire instruction set
 - [ ] improve the Web UI with keymap information + configuration
+- [ ] move state management to Pinia 
+- [ ] filter out some ROMs that won't show by default in a production build
