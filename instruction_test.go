@@ -39,7 +39,21 @@ func TestInstruction(t *testing.T) {
 		{"returnFromSub", testReturnFromSub},
 		{"jumpNNN", testJumpNNN},
 		{"callSubNNN", testCallSubNNN},
-		{"add NN to X", testAddNNToX},
+		{"skipIfXEqNN", testSkipIfXEqNN},
+		{"skipIfXNotEqNN", testSkipIfXNotEqNN},
+		{"skipIfXEqY", testSkipIfXEqY},
+		{"storeNNInX", testStoreNNInX},
+		{"addNNtoX", testAddNNToX},
+		{"storeYInX", testStoreYInX},
+		{"setXToXORY", testSetXToXORY},
+		{"setXToXANDY", testSetXToXANDY},
+		{"setXToXXORY", testSetXToXXORY},
+		{"addYToX", testAddYToX},
+		{"subYFromX", testSubYFromX},
+		{"storeYShiftedRightInX", testStoreYShiftedRightInX},
+		{"setXToYMinusX", testSetXToYMinusX},
+		{"storeYShiftedLeftInX", testStoreYShiftedLeftInX},
+		{"skipIfXNotEqY", testSkipIfXNotEqY},
 		{"set vx to random number mask with nn", testSetVXWithMask},
 	}
 
@@ -145,6 +159,145 @@ func testCallSubNNN(t *testing.T) {
 	}
 }
 
+func testSkipIfXEqNN(t *testing.T) {
+	t.Helper()
+
+	emu := mkEmu(t)
+
+	const (
+		x  = 1
+		nn = 0x12
+	)
+
+	args := []int{0x1, 0x2}
+
+	t.Run("check it skips when Vx equals nn", func(t *testing.T) {
+		emu.V[x] = nn
+		wantPC := emu.PC + InstructionSize
+
+		if err := emu.skipIfXEqNN(x, args); err != nil {
+			t.Fatalf("error: %v", err)
+		}
+
+		if emu.PC != wantPC {
+			t.Fatalf("got %#0x, want %#0x", emu.PC, wantPC)
+		}
+	})
+
+	t.Run("check it doesn't skip when Vx is not equal to nn", func(t *testing.T) {
+		emu.V[x] = nn + 1
+		wantPC := emu.PC
+
+		if err := emu.skipIfXEqNN(x, args); err != nil {
+			t.Fatalf("error: %v", err)
+		}
+
+		if emu.PC != wantPC {
+			t.Fatalf("got #%0x, want #%0x", emu.PC, wantPC)
+		}
+	})
+}
+
+func testSkipIfXNotEqNN(t *testing.T) {
+	t.Helper()
+
+	emu := mkEmu(t)
+
+	const (
+		x  = 1
+		nn = 0x12
+	)
+
+	args := []int{0x1, 0x2}
+
+	t.Run("it skips if Vx not eq nn", func(t *testing.T) {
+		emu.V[x] = nn + 1
+		wantPC := emu.PC + InstructionSize
+
+		if err := emu.skipIfXNotEqNN(x, args); err != nil {
+			t.Fatalf("error: %v", err)
+		}
+
+		if emu.PC != wantPC {
+			t.Fatalf("got %#0x, want %#0x", emu.PC, wantPC)
+		}
+	})
+
+	t.Run("it doesn't skip if Vx eq nn", func(t *testing.T) {
+		emu.V[x] = nn
+		wantPC := emu.PC
+
+		if err := emu.skipIfXNotEqNN(x, args); err != nil {
+			t.Fatalf("error: %v", err)
+		}
+
+		if emu.PC != wantPC {
+			t.Fatalf("got #%0x, want #%0x", emu.PC, wantPC)
+		}
+	})
+}
+
+func testSkipIfXEqY(t *testing.T) {
+	t.Helper()
+
+	emu := mkEmu(t)
+
+	const (
+		x       = 1
+		y       = 2
+		testVal = 5
+	)
+
+	t.Run("it skips if Vx eq Vy", func(t *testing.T) {
+		emu.V[x] = testVal
+		emu.V[y] = emu.V[x]
+		wantPC := emu.PC + InstructionSize
+
+		if err := emu.skipIfXEqY(x, y); err != nil {
+			t.Fatalf("error: %v", err)
+		}
+
+		if emu.PC != wantPC {
+			t.Fatalf("got %#0x, want %#0x", emu.PC, wantPC)
+		}
+	})
+
+	t.Run("it doesn't skip if Vx not eq Vy", func(t *testing.T) {
+		emu.V[x] = emu.V[y] + 1
+		wantPC := emu.PC
+
+		if err := emu.skipIfXEqY(x, y); err != nil {
+			t.Fatalf("error: %v", err)
+		}
+
+		if emu.PC != wantPC {
+			t.Fatalf("got %#0x, want %#0x", emu.PC, wantPC)
+		}
+	})
+}
+
+func testStoreNNInX(t *testing.T) {
+	t.Helper()
+
+	emu := mkEmu(t)
+
+	const (
+		x  = 1
+		nn = 0x11
+	)
+
+	emu.V[x] = 0
+	args := []int{0x1, 0x1}
+
+	if err := emu.storeNNInX(x, args); err != nil {
+		t.Fatalf("error: %v", err)
+	}
+
+	if emu.V[x] != nn {
+		t.Fatalf("got %#0x, want %#0x", emu.V[x], nn)
+	}
+}
+
 func testAddNNToX(t *testing.T) {
 	t.Helper()
 
@@ -169,6 +322,380 @@ func testAddNNToX(t *testing.T) {
 	if got != want {
 		t.Fatalf("got %d, want %d", got, want)
 	}
+}
+
+func testStoreYInX(t *testing.T) {
+	t.Helper()
+
+	emu := mkEmu(t)
+
+	const (
+		x  = 1
+		y  = 2
+		nn = 5
+	)
+
+	emu.V[x] = nn - 1
+	emu.V[y] = nn
+
+	if err := emu.storeYinX(x, y); err != nil {
+		t.Fatalf("error: %v", err)
+	}
+
+	if emu.V[x] != emu.V[y] {
+		t.Fatalf("got %#0x, want %#0x", emu.V[x], emu.V[y])
+	}
+}
+
+func testSetXToXORY(t *testing.T) {
+	t.Helper()
+	emu := mkEmu(t)
+
+	const (
+		x    = 1
+		y    = 2
+		valX = byte(0b00010001)
+		valY = byte(0b00100010)
+		want = byte(0b00110011)
+	)
+
+	emu.V[x] = valX
+	emu.V[y] = valY
+
+	if err := emu.setXToXORY(x, y); err != nil {
+		t.Fatalf("error: %v", err)
+	}
+
+	if emu.V[x] != want {
+		t.Fatalf("got %#0x, want %#0x", emu.V[x], want)
+	}
+}
+
+func testSetXToXANDY(t *testing.T) {
+	t.Helper()
+	emu := mkEmu(t)
+
+	const (
+		x    = 1
+		y    = 2
+		valX = byte(0b00010001)
+		valY = byte(0b00110011)
+		want = byte(0b00010001)
+	)
+
+	emu.V[x] = valX
+	emu.V[y] = valY
+
+	if err := emu.setXToXANDY(x, y); err != nil {
+		t.Fatalf("error: %v", err)
+	}
+
+	got := emu.V[x]
+	if got != want {
+		t.Fatalf("got %#0x, want %#0x", got, want)
+	}
+}
+
+func testSetXToXXORY(t *testing.T) {
+	t.Helper()
+	emu := mkEmu(t)
+
+	const (
+		x    = 1
+		y    = 2
+		valX = byte(0b00010001)
+		valY = byte(0b00110011)
+		want = byte(0b00100010)
+	)
+
+	emu.V[x] = valX
+	emu.V[y] = valY
+
+	if err := emu.setXToXXORY(x, y); err != nil {
+		t.Fatalf("error: %v", err)
+	}
+
+	got := emu.V[x]
+	if got != want {
+		t.Fatalf("got %#0x, want %#0x", got, want)
+	}
+}
+
+func testAddYToX(t *testing.T) {
+	t.Helper()
+	emu := mkEmu(t)
+
+	const (
+		x    = 1
+		y    = 2
+		valX = 1
+		valY = 10
+	)
+
+	emu.V[x] = valX
+	emu.V[y] = valY
+
+	t.Run("it adds VY to VX without overflow", func(t *testing.T) {
+		want := valX + valY
+
+		if err := emu.addYToX(x, y); err != nil {
+			t.Fatalf("error: %v", err)
+		}
+
+		if emu.V[x] != byte(want) {
+			t.Fatalf("got %#0x, want %#0x", emu.V[x], want)
+		}
+
+		if emu.V[0xF] != 0 {
+			t.Fatalf("overflow flag was set")
+		}
+	})
+
+	t.Run("it adds VY to VX with overflow", func(t *testing.T) {
+		emu.V[x] = 0xFF
+		emu.V[y] = valY
+
+		want := (valY + emu.V[x]) & 0xFF
+
+		if err := emu.addYToX(x, y); err != nil {
+			t.Fatalf("error: %v", err)
+		}
+
+		if emu.V[x] != byte(want) {
+			t.Fatalf("got %#0x, want %#0x", emu.V[x], want)
+		}
+
+		if emu.V[0xF] != 1 {
+			t.Fatalf("overflow flag not set")
+		}
+	})
+}
+
+func testSubYFromX(t *testing.T) {
+	t.Helper()
+	emu := mkEmu(t)
+
+	const (
+		x    = 1
+		y    = 2
+		valX = 10
+		valY = 1
+	)
+
+	emu.V[x] = valX
+	emu.V[y] = valY
+
+	t.Run("it subs VY from VX without borrow", func(t *testing.T) {
+		want := valX - valY
+
+		if err := emu.subYFromX(x, y); err != nil {
+			t.Fatalf("error: %v", err)
+		}
+
+		if emu.V[x] != byte(want) {
+			t.Fatalf("got %#0x, want %#0x", emu.V[x], want)
+		}
+
+		if emu.V[0xF] != 1 {
+			t.Fatalf("borrow flag was cleared")
+		}
+	})
+
+	t.Run("it subs VY from VX with borrow", func(t *testing.T) {
+		emu.V[x] = 0x0F
+		emu.V[y] = 0xFF
+
+		want := 0xF0
+
+		if err := emu.subYFromX(x, y); err != nil {
+			t.Fatalf("error: %v", err)
+		}
+
+		if emu.V[x] != byte(want) {
+			t.Fatalf("got %#0x, want %#0x", emu.V[x], want)
+		}
+
+		if emu.V[0xF] != 0 {
+			t.Fatalf("borrow flag was not cleared")
+		}
+	})
+}
+
+func testStoreYShiftedRightInX(t *testing.T) {
+	t.Helper()
+	emu := mkEmu(t)
+
+	const (
+		x = 1
+		y = 2
+	)
+
+	t.Run("it will not affect VF if bit is not dropped", func(t *testing.T) {
+		emu.V[y] = 0b00010000
+		want := byte(0b00001000)
+
+		if err := emu.storeYShiftedRightInX(x, y); err != nil {
+			t.Fatalf("error: %v", err)
+		}
+
+		if emu.V[x] != want {
+			t.Fatalf("got %#0x, want %#0x", emu.V[x], want)
+		}
+
+		if emu.V[0xF] != 0 {
+			t.Fatalf("VF was set")
+		}
+	})
+
+	t.Run("it will affect VF if bit is dropped", func(t *testing.T) {
+		emu.V[y] = 0b00000111
+		want := byte(0b00000011)
+
+		if err := emu.storeYShiftedRightInX(x, y); err != nil {
+			t.Fatalf("error: %v", err)
+		}
+
+		if emu.V[x] != want {
+			t.Fatalf("got %#0x, want %#0x", emu.V[x], want)
+		}
+
+		if emu.V[0xF] != 1 {
+			t.Fatalf("VF was not set")
+		}
+	})
+}
+
+func testSetXToYMinusX(t *testing.T) {
+	t.Helper()
+	emu := mkEmu(t)
+
+	const (
+		x    = 1
+		y    = 2
+		valX = 1
+		valY = 10
+	)
+
+	emu.V[x] = valX
+	emu.V[y] = valY
+
+	t.Run("it subs VX from VY without borrow", func(t *testing.T) {
+		want := valY - valX
+
+		if err := emu.setXToYMinusX(x, y); err != nil {
+			t.Fatalf("error: %v", err)
+		}
+
+		if emu.V[x] != byte(want) {
+			t.Fatalf("got %#0x, want %#0x", emu.V[x], want)
+		}
+
+		if emu.V[0xF] != 1 {
+			t.Fatalf("borrow flag was cleared")
+		}
+	})
+
+	t.Run("it subs VX from VY with borrow", func(t *testing.T) {
+		emu.V[x] = 0xFF
+		emu.V[y] = 0x0F
+
+		want := 0xF0
+
+		if err := emu.setXToYMinusX(x, y); err != nil {
+			t.Fatalf("error: %v", err)
+		}
+
+		if emu.V[x] != byte(want) {
+			t.Fatalf("got %#0x, want %#0x", emu.V[x], want)
+		}
+
+		if emu.V[0xF] != 0 {
+			t.Fatalf("borrow flag was not cleared")
+		}
+	})
+}
+
+func testStoreYShiftedLeftInX(t *testing.T) {
+	t.Helper()
+	emu := mkEmu(t)
+
+	const (
+		x = 1
+		y = 2
+	)
+
+	t.Run("it will not affect VF if bit is not dropped", func(t *testing.T) {
+		emu.V[y] = 0b00010000
+		want := byte(0b00100000)
+
+		if err := emu.storeYShiftedLeftInX(x, y); err != nil {
+			t.Fatalf("error: %v", err)
+		}
+
+		if emu.V[x] != want {
+			t.Fatalf("got %#0x, want %#0x", emu.V[x], want)
+		}
+
+		if emu.V[0xF] != 0 {
+			t.Fatalf("VF was set")
+		}
+	})
+
+	t.Run("it will affect VF if bit is dropped", func(t *testing.T) {
+		emu.V[y] = 0b10000111
+		want := byte(0b00001110)
+
+		if err := emu.storeYShiftedLeftInX(x, y); err != nil {
+			t.Fatalf("error: %v", err)
+		}
+
+		if emu.V[x] != want {
+			t.Fatalf("got %#0x, want %#0x", emu.V[x], want)
+		}
+
+		if emu.V[0xF] != 1 {
+			t.Fatalf("VF was not set")
+		}
+	})
+}
+
+func testSkipIfXNotEqY(t *testing.T) {
+	t.Helper()
+
+	emu := mkEmu(t)
+
+	const (
+		x       = 1
+		y       = 2
+		testVal = 5
+	)
+
+	t.Run("it doesn't skip if Vx eq Vy", func(t *testing.T) {
+		emu.V[x] = testVal
+		emu.V[y] = emu.V[x]
+		wantPC := emu.PC
+
+		if err := emu.skipIfXNotEqY(x, y); err != nil {
+			t.Fatalf("error: %v", err)
+		}
+
+		if emu.PC != wantPC {
+			t.Fatalf("got %#0x, want %#0x", emu.PC, wantPC)
+		}
+	})
+
+	t.Run("it skips if Vx not eq Vy", func(t *testing.T) {
+		emu.V[x] = emu.V[y] + 1
+		wantPC := emu.PC + InstructionSize
+
+		if err := emu.skipIfXNotEqY(x, y); err != nil {
+			t.Fatalf("error: %v", err)
+		}
+
+		if emu.PC != wantPC {
+			t.Fatalf("got %#0x, want %#0x", emu.PC, wantPC)
+		}
+	})
 }
 
 func testSetVXWithMask(t *testing.T) {

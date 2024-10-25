@@ -350,7 +350,7 @@ func (emu *Emulator) setXToXXORY(x, y int) error {
 
 const wrapValue = max8BitVal + 1
 
-// addYToX will add VY to VX, setting VF if it overflows.
+// addYToX will add VY to VX, setting VF if it overflows and keeping the lower 8 bits.
 func (emu *Emulator) addYToX(x, y int) error {
 	if err := isInBounds(RegisterCount, x); err != nil {
 		return err
@@ -367,7 +367,6 @@ func (emu *Emulator) addYToX(x, y int) error {
 		emu.V[0xF] = 1
 	}
 
-	// note: the typecase is enough, but I prefer to be explicit
 	emu.V[x] = byte(val & max8BitVal)
 
 	return nil
@@ -384,14 +383,15 @@ func (emu *Emulator) subYFromX(x, y int) error {
 		return err
 	}
 
-	val := int(emu.V[y]) - int(emu.V[x])
+	val := int(emu.V[x]) - int(emu.V[y])
 
 	clearOnBorrow := 1
 	if val < 0 {
 		clearOnBorrow = 0
+		val = val * -1
 	}
 
-	emu.V[x] = byte(val % wrapValue)
+	emu.V[x] = byte(val)
 	emu.V[0xF] = byte(clearOnBorrow)
 
 	return nil
@@ -409,7 +409,10 @@ func (emu *Emulator) storeYShiftedRightInX(x, y int) error {
 	}
 
 	vy := emu.V[y]
-	droppedBit := vy & 0x1
+
+	const bitMask = 0x1
+	droppedBit := vy & bitMask
+
 	shifted := vy >> 1
 	emu.V[0xF] = droppedBit
 	emu.V[x] = shifted
@@ -433,10 +436,11 @@ func (emu *Emulator) setXToYMinusX(x, y int) error {
 	clearOnBorrow := 1
 	if val < 0 {
 		clearOnBorrow = 0
+		val = -1 * val
 	}
 
 	emu.V[0xF] = byte(clearOnBorrow)
-	emu.V[x] = byte(val % wrapValue)
+	emu.V[x] = byte(val)
 
 	return nil
 }
@@ -452,8 +456,10 @@ func (emu *Emulator) storeYShiftedLeftInX(x, y int) error {
 		return err
 	}
 
+	const shiftBits = 7
+
 	vy := emu.V[y]
-	droppedBit := vy >> 7
+	droppedBit := vy >> shiftBits
 
 	emu.V[0xF] = droppedBit
 	emu.V[x] = vy << 1
