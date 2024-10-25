@@ -51,7 +51,6 @@ function handleRestartButton() {
 }
 
 function handleKeyDown(event) {
-  event.preventDefault();
   try {
     const key = mapKeyToHex(event.code);
     workerPeer.sendKeyDown(key, event.repeat);
@@ -61,7 +60,6 @@ function handleKeyDown(event) {
 }
 
 function handleKeyUp(event) {
-  event.preventDefault();
   try {
     const key = mapKeyToHex(event.code);
     workerPeer.sendKeyUp(key, event.repeat);
@@ -127,7 +125,7 @@ function updateColor(args: [string, string]) {
 
       </div>
 
-      <div class="game-area" tabindex="0" @keydown="handleKeyDown" @keyup="handleKeyUp">
+      <div class="game-area" tabindex="0" @keydown.prevent="handleKeyDown" @keyup.prevent="handleKeyUp">
         <DrawArea />
       </div>
     </div>
