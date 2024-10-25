@@ -19,7 +19,9 @@ const workerPeer = new WorkerPeer(worker);
 workerPeer.on(Event.WASMLoaded, () => {
   app.mount("#app");
 });
-workerPeer.loadWASM(new URL("webui.wasm", import.meta.url).toString());
+
+const baseurl = window.location.origin + window.location.pathname;
+workerPeer.loadWASM(new URL("webui.wasm", baseurl).toString());
 
 
 app.provide<WorkerPeer>("workerPeer", workerPeer);
