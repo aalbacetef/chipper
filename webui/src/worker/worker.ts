@@ -1,5 +1,5 @@
-import { render, type ColorOptions, type Dims } from '@/lib/game';
-import type { GenericMessage, KeyEvent, LoadROM, LoadWASM, RestartEmu, StartEmu, StopEmu, TransferOffscreenCanvas, WorkerEvent } from '@/lib/messages';
+import { defaultColors, render, type ColorOptions, type Dims } from '@/lib/game';
+import type { GenericMessage, KeyEvent, LoadROM, LoadWASM, RestartEmu, SetColors, StartEmu, StopEmu, TransferOffscreenCanvas, WorkerEvent } from '@/lib/messages';
 import { MessageType, Event } from "@/lib/messages";
 import { loadWASM, type WASMLoadResult } from '@/lib/wasm';
 
@@ -22,6 +22,7 @@ const emulatorConstants = {
 class WorkerInstance {
   result?: WASMLoadResult;
   canvas?: OffscreenCanvas;
+  colors: ColorOptions = defaultColors;
 
 
   startRendering(): void {
@@ -40,11 +41,7 @@ class WorkerInstance {
   }
 
   loop(buf: Uint8Array, ctx: OffscreenCanvasRenderingContext2D, w: number, h: number) {
-    const colors: ColorOptions = {
-      set: [10, 200, 10, 150],
-      clear: [0, 0, 0, 255],
-    };
-
+    const colors = this.colors;
     const dims: Dims = [w, h];
 
     render(buf, ctx, dims, colors);
@@ -74,6 +71,8 @@ class WorkerInstance {
       case MessageType.KeyEvent:
         return this.handleKeyEvent(msg as KeyEvent);
 
+      case MessageType.SetColors:
+        return this.handleSetColors(msg as SetColors);
 
       default:
         console.log('unhandled message: ', msg);
@@ -116,6 +115,11 @@ class WorkerInstance {
   handleRestartEmu(msg: RestartEmu): void {
     self.RestartEmu();
     notifyStateChange(Event.EmuRestarted);
+  }
+
+  handleSetColors(msg: SetColors): void {
+    this.colors = msg.data;
+    notifyStateChange(Event.SetColors);
   }
 
 

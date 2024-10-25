@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { inject, ref } from "vue";
 import { WorkerPeer } from "@/lib/peer";
-import { mapKeyToHex } from '@/lib/game';
+import { type Color, mapKeyToHex, hexToRGBA, defaultColors } from '@/lib/game';
 
 import DrawArea from "@/components/DrawArea.vue";
 import ColorPicker from "@/components/ColorPicker.vue";
@@ -16,6 +16,9 @@ type RomManifestEntry = {
 const roms = ref<RomManifestEntry[]>([]);
 const loading = ref<boolean>(true);
 
+let colorSet = defaultColors.set;
+let colorClear = defaultColors.clear;
+
 fetch(manifestURL)
   .then(res => res.json())
   .then((data: Record<string, string>) => {
@@ -28,6 +31,7 @@ fetch(manifestURL)
 
     loading.value = false;
   })
+  .catch(err => console.error('failed to load rom: ', err));
 
 const selectedRomIndex = ref<number>(0);
 
@@ -70,8 +74,20 @@ function handleKeyUp(event) {
   }
 }
 
-function updateColor(name: string, colorHex: string) {
+function updateColor(args: [string, string]) {
+  const [name, colorHex] = args;
 
+  const color = hexToRGBA(colorHex);
+  switch (name) {
+    case "set":
+      colorSet = color;
+      break;
+    case "clear":
+      colorClear = color;
+      break;
+  }
+
+  workerPeer.setColors({ set: colorSet, clear: colorClear });
 }
 </script>
 
@@ -95,8 +111,8 @@ function updateColor(name: string, colorHex: string) {
 
         <div class="color-control">
           <p>pick color: </p>
-          <ColorPicker name="set" @changed="updateColor" />
-          <ColorPicker name="clear" @changed="updateColor" />
+          <ColorPicker name="set" display="foreground" @update="updateColor" />
+          <ColorPicker name="clear" display="background" @update="updateColor" />
         </div>
 
         <div class="emu-control">

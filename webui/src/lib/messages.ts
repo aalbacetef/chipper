@@ -1,3 +1,4 @@
+import type { ColorOptions } from "./game";
 
 
 export type GenericMessage = {
@@ -13,6 +14,7 @@ export enum Event {
   EmuStopped = "emu-stopped",
   EmuRestarted = "emu-restarted",
   CanvasCreated = "canvas-created",
+  SetColors = "set-colors",
 }
 
 export enum MessageType {
@@ -24,6 +26,7 @@ export enum MessageType {
   RestartEmu = "restart-emu",
   TransferOffscreenCanvas = "transfer-offscreen-canvas",
   KeyEvent = "key-event",
+  SetColors = "set-colors",
 }
 
 export type WorkerEvent = {
@@ -67,6 +70,11 @@ export type TransferOffscreenCanvas = {
   data: {
     canvas: OffscreenCanvas;
   };
+}
+
+export type SetColors = {
+  type: MessageType.SetColors;
+  data: ColorOptions;
 }
 
 export enum KeyDirection {

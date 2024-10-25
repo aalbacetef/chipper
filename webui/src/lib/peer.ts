@@ -3,6 +3,7 @@ import {
   Event,
   type StopEmu,
   type RestartEmu,
+  type SetColors,
 } from "@/lib/messages";
 
 import {
@@ -15,6 +16,7 @@ import {
   type StartEmu,
   type KeyEvent,
 } from "@/lib/messages";
+import type { ColorOptions } from "./game";
 
 
 const RunOnce = true;
@@ -75,8 +77,7 @@ export class WorkerPeer {
     this.postMessage<StopEmu>({
       type: MessageType.StopEmu,
       data: {},
-    })
-
+    });
   }
 
   restartEmu(): void {
@@ -85,7 +86,16 @@ export class WorkerPeer {
     this.postMessage<RestartEmu>({
       type: MessageType.RestartEmu,
       data: {},
-    })
+    });
+  }
+
+  setColors(colors: ColorOptions): void {
+    this.on(Event.SetColors, () => console.log('updated colors'), RunOnce);
+
+    this.postMessage<SetColors>({
+      type: MessageType.SetColors,
+      data: colors,
+    });
   }
 
   setOnscreenCanvas(canvas: HTMLCanvasElement): void {

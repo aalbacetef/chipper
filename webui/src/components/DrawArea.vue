@@ -12,8 +12,6 @@ onMounted(() => {
   workerPeer.setOnscreenCanvas(canvas.value);
   workerPeer.makeOffscreenCanvas();
 });
-
-
 </script>
 
 <template>
