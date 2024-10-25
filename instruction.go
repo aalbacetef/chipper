@@ -32,7 +32,7 @@ func (emu *Emulator) Execute(instr Instruction) error { //nolint: funlen,cyclop
 
 	switch instr.Op {
 	default:
-		return nil //	return fmt.Errorf("bad instruction: %v", instr)
+		return nil
 
 	case ExecNNN:
 		return InstructionNotImplementedError{instr.Op}
@@ -141,8 +141,7 @@ func (emu *Emulator) Execute(instr Instruction) error { //nolint: funlen,cyclop
 	}
 }
 
-func (emu *Emulator) execNNN(args []int) error {
-	panic("SHOULD NOT BE HERE")
+func (emu *Emulator) execNNN(_ []int) error {
 	return nil
 }
 
@@ -557,6 +556,7 @@ func (emu *Emulator) drawSpriteInXY(x, y, n int) error {
 			ypos := (posy + yline) % dx
 			at := emu.Display.At(xpos, ypos)
 			bit := byte(1)
+
 			if ColorEq(at, clearColor) {
 				bit = 0
 			}
@@ -603,6 +603,7 @@ func (emu *Emulator) skipIfKeyInXNotPressed(x int) error {
 	}
 
 	fmt.Println("skip if key not pressed: ", emu.V[x])
+
 	v := emu.Keys.Get(int(emu.V[x]))
 	if !v {
 		emu.PC += InstructionSize
@@ -628,6 +629,7 @@ func (emu *Emulator) waitForKeyAndStoreInX(x int) error {
 
 	fmt.Println("[instruction.go] waiting for key")
 	key := <-emu.Keys.WaitUntilKeypress()
+
 	fmt.Println("[instruction.go] got key: ", key)
 	emu.V[x] = byte(key)
 
