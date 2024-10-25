@@ -23,6 +23,7 @@ func ToAddr3(p []int) (uint16, error) {
 }
 
 func toUint16(b []byte) uint16 {
+	//nolint:mnd
 	return (uint16(b[0]) << 8) | uint16(b[1])
 }
 
@@ -45,7 +46,9 @@ func ToByte(p []int) (byte, error) {
 		return 0, fmt.Errorf("expected %d values, got %d", want, got)
 	}
 
-	val := byte(p[0])<<4 | byte(p[1])
+	const shiftBits = 4
+
+	val := byte(p[0])<<shiftBits | byte(p[1])
 
 	return val, nil
 }
@@ -68,8 +71,10 @@ func bcdOfInt(v int) ([]byte, error) {
 	const n = 3
 	p := make([]byte, n)
 
+	const base = 10
+
 	for k := 0; k < n; k++ {
-		div := int(math.Pow(10, float64(n-k)))
+		div := int(math.Pow(base, float64(n-k)))
 		p[k] = byte(v / div)
 		v = v - (int(p[k]) * div)
 	}
@@ -78,7 +83,7 @@ func bcdOfInt(v int) ([]byte, error) {
 }
 
 func DumpEmu(emu *Emulator) {
-	p := make([]byte, 2)
+	p := make([]byte, InstructionSize)
 	copy(p, emu.RAM[emu.PC:emu.PC+2])
 
 	instr, err := Decode(p)

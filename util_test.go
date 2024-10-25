@@ -35,9 +35,7 @@ func TestUtil(t *testing.T) {
 				if got != c.want {
 					t.Fatalf("want #%0x, got #%0x", c.want, got)
 				}
-
 			})
 		}
-
 	})
 }

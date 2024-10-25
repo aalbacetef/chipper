@@ -45,7 +45,7 @@ func (s *Stack) Pop() (uint16, error) {
 		return 0, fmt.Errorf("stack is empty")
 	}
 
-	s.pointer -= 1
+	s.pointer--
 	val := s.data[s.pointer]
 
 	return val, nil
@@ -58,7 +58,7 @@ func (s *Stack) Push(val uint16) error {
 	}
 
 	s.data[s.pointer] = val
-	s.pointer += 1
+	s.pointer++
 
 	return nil
 }

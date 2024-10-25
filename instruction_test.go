@@ -461,7 +461,7 @@ func testAddYToX(t *testing.T) {
 			t.Fatalf("error: %v", err)
 		}
 
-		if emu.V[x] != byte(want) {
+		if emu.V[x] != want {
 			t.Fatalf("got %#0x, want %#0x", emu.V[x], want)
 		}
 
@@ -526,43 +526,47 @@ func testStoreYShiftedRightInX(t *testing.T) {
 	emu := mkEmu(t)
 
 	const (
-		x = 1
 		y = 2
+		x = 1
 	)
 
-	t.Run("it will not affect VF if bit is not dropped", func(t *testing.T) {
-		emu.V[y] = 0b00010000
-		want := byte(0b00001000)
+	cases := []struct {
+		label string
+		set   byte
+		want  byte
+		vf    byte
+	}{
+		{
+			"it will not affect VF if bit is not dropped",
+			0b00010000,
+			0b00001000,
+			0,
+		},
+		{
+			"it will affect VF if bit is dropped",
+			0b00000111,
+			0b00000011,
+			1,
+		},
+	}
 
-		if err := emu.storeYShiftedRightInX(x, y); err != nil {
-			t.Fatalf("error: %v", err)
-		}
+	for _, c := range cases {
+		t.Run(c.label, func(t *testing.T) {
+			emu.V[y] = c.set
 
-		if emu.V[x] != want {
-			t.Fatalf("got %#0x, want %#0x", emu.V[x], want)
-		}
+			if err := emu.storeYShiftedRightInX(x, y); err != nil {
+				t.Fatalf("error: %v", err)
+			}
 
-		if emu.V[0xF] != 0 {
-			t.Fatalf("VF was set")
-		}
-	})
+			if emu.V[x] != c.want {
+				t.Fatalf("got %#0x, want %#0x", emu.V[x], c.want)
+			}
 
-	t.Run("it will affect VF if bit is dropped", func(t *testing.T) {
-		emu.V[y] = 0b00000111
-		want := byte(0b00000011)
-
-		if err := emu.storeYShiftedRightInX(x, y); err != nil {
-			t.Fatalf("error: %v", err)
-		}
-
-		if emu.V[x] != want {
-			t.Fatalf("got %#0x, want %#0x", emu.V[x], want)
-		}
-
-		if emu.V[0xF] != 1 {
-			t.Fatalf("VF was not set")
-		}
-	})
+			if emu.V[0xF] != c.vf {
+				t.Fatalf("VF not equal to: %#0x", c.vf)
+			}
+		})
+	}
 }
 
 func testSetXToYMinusX(t *testing.T) {
@@ -570,16 +574,15 @@ func testSetXToYMinusX(t *testing.T) {
 	emu := mkEmu(t)
 
 	const (
-		x    = 1
-		y    = 2
+		x    = 2
+		y    = 3
 		valX = 1
-		valY = 10
+		valY = 11
 	)
 
-	emu.V[x] = valX
-	emu.V[y] = valY
-
 	t.Run("it subs VX from VY without borrow", func(t *testing.T) {
+		emu.V[x] = valX
+		emu.V[y] = valY
 		want := valY - valX
 
 		if err := emu.setXToYMinusX(x, y); err != nil {
@@ -620,8 +623,8 @@ func testStoreYShiftedLeftInX(t *testing.T) {
 	emu := mkEmu(t)
 
 	const (
-		x = 1
-		y = 2
+		x = 2
+		y = 3
 	)
 
 	t.Run("it will not affect VF if bit is not dropped", func(t *testing.T) {

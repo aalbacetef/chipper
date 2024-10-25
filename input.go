@@ -25,5 +25,6 @@ func (stub *StubKeyInputSource) Set(_ int, _ bool) {
 func (stub *StubKeyInputSource) WaitUntilKeypress() <-chan int {
 	l := make(chan int, 1)
 	l <- 0
+
 	return l
 }

@@ -136,7 +136,10 @@ func (d *DebugDisplay) Set(x, y int, c color.Color) {
 }
 
 func ColorEq(c1, c2 color.Color) bool {
+	//nolint: varnamelen
 	r1, g1, b1, a1 := c1.RGBA()
+
+	//nolint: varnamelen
 	r2, g2, b2, a2 := c2.RGBA()
 
 	if r1 != r2 {

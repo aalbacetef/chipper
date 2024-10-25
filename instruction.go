@@ -27,7 +27,7 @@ func (e InstructionNotImplementedError) Error() string {
 	return fmt.Sprintf("instruction not implemented: '%s'", e.op)
 }
 
-func (emu *Emulator) Execute(instr Instruction) error { //nolint: funlen,cyclop
+func (emu *Emulator) Execute(instr Instruction) error { //nolint: funlen,cyclop,gocyclo
 	args := instr.Operands
 
 	switch instr.Op {
@@ -35,7 +35,7 @@ func (emu *Emulator) Execute(instr Instruction) error { //nolint: funlen,cyclop
 		return nil
 
 	case ExecNNN:
-		return InstructionNotImplementedError{instr.Op}
+		return emu.execNNN(args, instr)
 
 	case Clear:
 		return emu.clearScreen()
@@ -141,8 +141,8 @@ func (emu *Emulator) Execute(instr Instruction) error { //nolint: funlen,cyclop
 	}
 }
 
-func (emu *Emulator) execNNN(_ []int) error {
-	return nil
+func (emu *Emulator) execNNN(_ []int, instr Instruction) error {
+	return InstructionNotImplementedError{instr.Op}
 }
 
 func (emu *Emulator) clearScreen() error {
@@ -348,8 +348,6 @@ func (emu *Emulator) setXToXXORY(x, y int) error {
 	return nil
 }
 
-const wrapValue = max8BitVal + 1
-
 // addYToX will add VY to VX, setting VF if it overflows and keeping the lower 8 bits.
 func (emu *Emulator) addYToX(x, y int) error {
 	if err := isInBounds(RegisterCount, x); err != nil {
@@ -533,7 +531,7 @@ func (emu *Emulator) setXToRandomNumWithMaskNN(x int, args []int) error {
 }
 
 // drawSpriteInXY NEEDS TO BE DONE PROPERLY.
-func (emu *Emulator) drawSpriteInXY(x, y, n int) error {
+func (emu *Emulator) drawSpriteInXY(x, y, n int) error { //nolint: gocognit
 	if err := isInBounds(RegisterCount, x); err != nil {
 		return err
 	}
@@ -543,7 +541,7 @@ func (emu *Emulator) drawSpriteInXY(x, y, n int) error {
 	}
 
 	b := emu.Display.Bounds()
-	dx, dy := b.Dx(), b.Dy()
+	displayWidth, displayHeight := b.Dx(), b.Dy()
 
 	posx, posy := int(emu.V[x]), int(emu.V[y])
 
@@ -551,15 +549,17 @@ func (emu *Emulator) drawSpriteInXY(x, y, n int) error {
 	clearColor := emu.Display.ColorClear()
 	setColor := emu.Display.ColorSet()
 
+	const shiftMask = 7
+
 	for yline := 0; yline < n; yline++ {
 		addr := int(emu.Index) + yline
 		pixels := emu.RAM[addr]
 
 		for xline := 0; xline < 8; xline++ {
-			value := (pixels >> (7 - xline)) & 1
+			value := (pixels >> (shiftMask - xline)) & 1
 
-			xpos := (posx + xline) % dx
-			ypos := (posy + yline) % dx
+			xpos := (posx + xline) % displayWidth
+			ypos := (posy + yline) % displayWidth
 			at := emu.Display.At(xpos, ypos)
 			bit := byte(1)
 
@@ -567,7 +567,7 @@ func (emu *Emulator) drawSpriteInXY(x, y, n int) error {
 				bit = 0
 			}
 
-			newPix := value ^ byte(bit)
+			newPix := value ^ bit
 
 			if value == bit {
 				emu.V[0xF] = 1
@@ -581,7 +581,7 @@ func (emu *Emulator) drawSpriteInXY(x, y, n int) error {
 			emu.Display.Set(xpos, ypos, c)
 		}
 
-		if (posy + yline) >= dy {
+		if (posy + yline) >= displayHeight {
 			break
 		}
 	}
@@ -595,6 +595,7 @@ func (emu *Emulator) skipIfKeyInXIsPressed(x int) error {
 	}
 
 	fmt.Println("skip if key pressed: ", emu.V[x])
+
 	v := emu.Keys.Get(int(emu.V[x]))
 	if v {
 		emu.PC += InstructionSize
@@ -634,6 +635,7 @@ func (emu *Emulator) waitForKeyAndStoreInX(x int) error {
 	}
 
 	fmt.Println("[instruction.go] waiting for key")
+
 	key := <-emu.Keys.WaitUntilKeypress()
 
 	fmt.Println("[instruction.go] got key: ", key)

@@ -2,24 +2,24 @@ package chipper
 
 import "testing"
 
-func TestDisplay(t *testing.T) { //nolint: gocognit
+func TestDisplay(t *testing.T) {
 	t.Run("should set", func(tt *testing.T) {
-		d, err := NewDebugDisplay(5, 5)
+		display, err := NewDebugDisplay(5, 5)
 		if err != nil {
 			tt.Fatalf("could not create display: %v", err)
 		}
 
-		colorSet := d.ColorSet()
-		d.Set(2, 1, colorSet)
+		colorSet := display.ColorSet()
+		display.Set(2, 1, colorSet)
 
-		c := d.At(2, 1)
+		c := display.At(2, 1)
 		if !ColorEq(c, colorSet) {
 			tt.Fatalf("expected %#0x, got %#0x", ColorSet, c)
 		}
 	})
 
 	t.Run("simple display", func(tt *testing.T) {
-		d, err := NewDebugDisplay(5, 5)
+		display, err := NewDebugDisplay(5, 5)
 		if err != nil {
 			tt.Fatalf("could not create: %v", err)
 		}
@@ -33,14 +33,15 @@ func TestDisplay(t *testing.T) { //nolint: gocognit
 			{3, 3},
 		}
 
-		colorSet := d.ColorSet()
+		colorSet := display.ColorSet()
+
 		for _, p := range points {
 			x := p[0]
 			y := p[1]
 
-			d.Set(x, y, colorSet)
+			display.Set(x, y, colorSet)
 
-			if !ColorEq(d.At(x, y), colorSet) {
+			if !ColorEq(display.At(x, y), colorSet) {
 				tt.Fatalf("point (%d, %d) was not set", x, y)
 			}
 		}
