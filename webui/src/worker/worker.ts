@@ -89,7 +89,7 @@ class WorkerInstance {
 
   handleLoadROM(msg: LoadROM): void {
     const filename = msg.data.filename;
-    fetch(filename)
+    fetch("/" + filename)
       .then(r => {
         return r.arrayBuffer()
       }).then(buf => {

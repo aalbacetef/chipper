@@ -13,8 +13,8 @@ const app = createApp(App)
 app.use(createPinia())
 app.use(router)
 
-const url = new URL('@/worker/index.ts', import.meta.url);
-const workerPeer = new WorkerPeer(new Worker(url, { type: "module" }));
+const worker = new Worker(new URL('@/worker/index.ts', import.meta.url), { type: "module" });
+const workerPeer = new WorkerPeer(worker);
 
 workerPeer.on(Event.WASMLoaded, () => {
   app.mount("#app");

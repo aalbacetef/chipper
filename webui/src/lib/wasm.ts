@@ -7,8 +7,11 @@ export type WASMLoadResult = {
 export async function loadWASM(wasmName: string): Promise<WASMLoadResult> {
   const go = new Go();
 
-  const result = await WebAssembly.instantiateStreaming(
-    fetch(wasmName, { headers: { "Content-Type": "application/wasm" } }),
+  const resp = await fetch(wasmName);
+  const buffer = await resp.arrayBuffer();
+
+  const result = await WebAssembly.instantiate(
+    buffer,
     go.importObject,
   )
 
