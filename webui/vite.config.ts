@@ -3,8 +3,9 @@ import { fileURLToPath, URL } from 'node:url'
 import { defineConfig } from 'vite'
 import vue from '@vitejs/plugin-vue'
 
-// https://vitejs.dev/config/
-export default defineConfig({
+
+const githubBase = '/chipper/';
+const defaultConfig = {
   plugins: [
     vue(),
   ],
@@ -13,4 +14,13 @@ export default defineConfig({
       '@': fileURLToPath(new URL('./src', import.meta.url))
     }
   }
+};
+
+export default defineConfig(({ mode }) => {
+  let base = '/';
+  if (mode === 'production') {
+    base = githubBase;
+  }
+
+  return Object.assign({ base }, defaultConfig)
 })
