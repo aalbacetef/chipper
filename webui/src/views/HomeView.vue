@@ -114,12 +114,20 @@ function updateColor(args: [string, string]): void {
         </div>
       </div>
 
-      <div class="game-area" tabindex="0" @keydown.prevent="handleKeyDown" @keyup.prevent="handleKeyUp">
+      <div
+        class="game-area"
+        tabindex="0"
+        @keydown.prevent="handleKeyDown"
+        @keyup.prevent="handleKeyUp"
+      >
         <DrawArea />
       </div>
     </div>
 
-    <AudioPlayer :manifest="audioManifest" v-if="audioManifest !== null && typeof audioManifest !== 'undefined'" />
+    <AudioPlayer
+      :manifest="audioManifest"
+      v-if="audioManifest !== null && typeof audioManifest !== 'undefined'"
+    />
   </main>
 </template>
 
