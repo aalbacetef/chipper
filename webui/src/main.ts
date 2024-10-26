@@ -10,17 +10,17 @@ import { Event } from './lib/messages';
 
 const app = createApp(App);
 
-app.use(createPinia());
-app.use(router);
 
 const worker = new Worker(new URL('@/worker/index.ts', import.meta.url), { type: 'module' });
 const workerPeer = new WorkerPeer(worker);
 
 workerPeer.on(Event.WASMLoaded, () => {
+  app.use(createPinia());
+  app.use(router);
+  app.provide<WorkerPeer>('workerPeer', workerPeer);
   app.mount('#app');
 });
 
 const baseURL = window.location.origin + window.location.pathname;
 workerPeer.loadWASM(new URL('webui.wasm', baseURL).toString());
 
-app.provide<WorkerPeer>('workerPeer', workerPeer);
