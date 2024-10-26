@@ -71,6 +71,9 @@ copy-wasm: build-wasm
 web: copy-wasm copy-roms
 	cd webui && bun x vite build
 
+web-local: copy-wasm copy-roms
+	cd webui && bun x vite build -m dev 
+
 dev: fmt
 	cd webui && bun x vite 
 
