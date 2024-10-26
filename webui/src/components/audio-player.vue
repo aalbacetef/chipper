@@ -2,6 +2,8 @@
 import { computed, onMounted, ref } from 'vue';
 import { type AudioManifest, type Song } from '@/lib/music';
 
+defineOptions({ name: 'audio-player' });
+
 type Props = {
   manifest: AudioManifest;
 };

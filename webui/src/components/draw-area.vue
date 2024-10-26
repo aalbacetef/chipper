@@ -2,10 +2,16 @@
 import { inject, onMounted, useTemplateRef } from 'vue';
 import { WorkerPeer } from '@/lib/peer';
 
+defineOptions({ name: 'draw-area' });
+
 const canvas = useTemplateRef<HTMLCanvasElement>('canvas');
 const workerPeer = inject<WorkerPeer>('workerPeer');
 
 onMounted(() => {
+  if(canvas.value === null) {
+    return;
+  }
+
   workerPeer!.setOnscreenCanvas(canvas.value);
   workerPeer!.makeOffscreenCanvas();
 });

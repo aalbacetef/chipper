@@ -4,9 +4,9 @@ import { WorkerPeer } from '@/lib/peer';
 import { loadROMManifest, type ROMEntry, mapKeyToHex, hexToRGBA, defaultColors } from '@/lib/game';
 import { loadAudioManifest, type AudioManifest } from '@/lib/music';
 
-import AudioPlayer from '@/components/AudioPlayer.vue';
-import DrawArea from '@/components/DrawArea.vue';
-import ColorPicker from '@/components/ColorPicker.vue';
+import AudioPlayer from '@/components/audio-player.vue';
+import DrawArea from '@/components/draw-area.vue';
+import ColorPicker from '@/components/color-picker.vue';
 
 const roms = ref<ROMEntry[]>([]);
 const loading = ref<boolean>(true);
@@ -67,9 +67,7 @@ function handleKeyUp(event: KeyboardEvent) {
   }
 }
 
-function updateColor(args: [string, string]): void {
-  const [name, colorHex] = args;
-
+function updateColor(name: string, colorHex: string): void {
   const color = hexToRGBA(colorHex);
   switch (name) {
     case 'set':
@@ -101,8 +99,8 @@ function updateColor(args: [string, string]): void {
 
         <div class="color-control">
           <p>pick color:</p>
-          <ColorPicker name="set" display="foreground" @update="updateColor" />
-          <ColorPicker name="clear" display="background" @update="updateColor" />
+          <color-picker name="set" display="foreground" @update="updateColor" />
+          <color-picker name="clear" display="background" @update="updateColor" />
         </div>
 
         <div class="emu-control">
@@ -114,20 +112,12 @@ function updateColor(args: [string, string]): void {
         </div>
       </div>
 
-      <div
-        class="game-area"
-        tabindex="0"
-        @keydown.prevent="handleKeyDown"
-        @keyup.prevent="handleKeyUp"
-      >
-        <DrawArea />
+      <div class="game-area" tabindex="0" @keydown.prevent="handleKeyDown" @keyup.prevent="handleKeyUp">
+        <draw-area />
       </div>
     </div>
 
-    <AudioPlayer
-      :manifest="audioManifest"
-      v-if="audioManifest !== null && typeof audioManifest !== 'undefined'"
-    />
+    <audio-player :manifest="audioManifest" v-if="audioManifest !== null && typeof audioManifest !== 'undefined'" />
   </main>
 </template>
 
