@@ -11,7 +11,6 @@ import { Event } from './lib/messages';
 
 const app = createApp(App);
 
-
 const worker = new Worker(new URL('@/worker/index.ts', import.meta.url), { type: 'module' });
 const workerPeer = new WorkerPeer(worker);
 
@@ -25,4 +24,3 @@ workerPeer.on(Event.WASMLoaded, () => {
 });
 
 workerPeer.loadWASM(new URL('webui.wasm', document.baseURI).toString());
-

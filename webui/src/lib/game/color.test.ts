@@ -1,4 +1,3 @@
-
 import { describe, it } from 'vitest';
 import { hexToRGBA, RGBAToHex, type Color } from './color';
 

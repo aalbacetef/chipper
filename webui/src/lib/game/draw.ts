@@ -1,4 +1,3 @@
-
 import type { ColorOptions } from './color';
 
 export type Dims = [number, number];
@@ -63,4 +62,3 @@ function drawImage(
 
   return imgData;
 }
-

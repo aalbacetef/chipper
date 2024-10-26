@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { Status } from '@/lib/status';
 
-defineOptions({ name: "notification-item" });
+defineOptions({ name: 'notification-item' });
 
 const props = defineProps<{
   text: string;
@@ -34,14 +34,14 @@ function handleClose() {
 }
 
 .notification--wrapper.success {
-  background-color: #33FF33;
+  background-color: #33ff33;
 }
 
 .notification--wrapper.error {
-  background-color: #FF3333;
+  background-color: #ff3333;
 }
 
 .notification--wrapper.warn {
-  background-color: #AAAA11;
+  background-color: #aaaa11;
 }
 </style>

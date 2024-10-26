@@ -1,4 +1,3 @@
-
 export const KeyMap: Record<string, number> = {
   KeyV: 0,
   Digit1: 1,
@@ -31,4 +30,3 @@ export class MissingKeyError extends Error {
     super(`missing map for key: '${key}`);
   }
 }
-

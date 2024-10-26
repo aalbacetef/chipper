@@ -86,12 +86,20 @@ function handleKeyUp(event: KeyboardEvent) {
         </div>
       </div>
 
-      <div class="game-area" tabindex="0" @keydown.prevent="handleKeyDown" @keyup.prevent="handleKeyUp">
+      <div
+        class="game-area"
+        tabindex="0"
+        @keydown.prevent="handleKeyDown"
+        @keyup.prevent="handleKeyUp"
+      >
         <draw-area />
       </div>
     </div>
 
-    <audio-player :manifest="audioManifest" v-if="audioManifest !== null && typeof audioManifest !== 'undefined'" />
+    <audio-player
+      :manifest="audioManifest"
+      v-if="audioManifest !== null && typeof audioManifest !== 'undefined'"
+    />
   </main>
 </template>
 

@@ -8,7 +8,7 @@ const canvas = useTemplateRef<HTMLCanvasElement>('canvas');
 const workerPeer = inject<WorkerPeer>('workerPeer');
 
 onMounted(() => {
-  if(canvas.value === null) {
+  if (canvas.value === null) {
     return;
   }
 

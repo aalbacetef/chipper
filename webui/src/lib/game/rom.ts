@@ -1,5 +1,3 @@
-
-
 export type ROMEntry = {
   name: string;
   path: string;
@@ -21,4 +19,3 @@ export function loadROMManifest(): Promise<ROMEntry[]> {
       return roms;
     });
 }
-

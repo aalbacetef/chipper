@@ -1,4 +1,3 @@
-
 export type Color = [number, number, number, number];
 export type ColorNames = 'set' | 'clear';
 export type ColorOptions = { set: Color; clear: Color };
@@ -40,4 +39,3 @@ function pad(s: string): string {
 
   return s;
 }
-

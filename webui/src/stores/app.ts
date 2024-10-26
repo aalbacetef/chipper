@@ -6,17 +6,13 @@ import { useNotificationStore } from '@/stores/notifications';
 import { Status } from '@/lib/status';
 import { WorkerPeer } from '@/lib/peer';
 
+export type Buttons = 'start' | 'stop' | 'restart';
 
-export type Buttons =
-  | "start"
-  | "stop"
-  | "restart";
-
-const notifications = useNotificationStore()
+const notifications = useNotificationStore();
 
 const workerPeer = inject<WorkerPeer>('workerPeer');
 if (typeof workerPeer === 'undefined') {
-  throw new Error("could not load workerPeer");
+  throw new Error('could not load workerPeer');
 }
 
 export const useAppStore = defineStore('app', () => {
@@ -64,9 +60,8 @@ export const useAppStore = defineStore('app', () => {
     loadedROM,
     colors,
 
-
     buttonClicked,
     isROMLoaded,
     setColor,
-  }
+  };
 });
