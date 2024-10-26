@@ -1,18 +1,19 @@
 <script setup lang="ts">
 import { ref } from 'vue';
-import { defaultColors, RGBAToHex } from '@/lib/game';
+import { defaultColors, hexToRGBA, RGBAToHex } from '@/lib/game';
+import type { ColorNames } from '@/lib/game';
+import { useAppStore } from '@/stores/app';
 
 defineOptions({ name: 'color-picker' });
 
+const appStore = useAppStore();
+
 type Props = {
-  name: string;
+  name: ColorNames;
   display: string;
 };
 
 const props = defineProps<Props>();
-const emit = defineEmits<{
-  update: [name: string, colorHex: string];
-}>();
 
 const chosenColor = ref<string>('#000000');
 
@@ -29,7 +30,7 @@ chosenColor.value = v;
 
 function handleInput(event: Event): void {
   const target = event.target as HTMLInputElement;
-  emit('update', props.name, target.value);
+  appStore.setColor(props.name, hexToRGBA(target.value));
 }
 </script>
 
