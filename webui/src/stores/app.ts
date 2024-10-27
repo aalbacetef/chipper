@@ -8,16 +8,15 @@ import { WorkerPeer } from '@/lib/peer';
 
 export type Buttons = 'start' | 'stop' | 'restart';
 
-const notifications = useNotificationStore();
-
-const workerPeer = inject<WorkerPeer>('workerPeer');
-if (typeof workerPeer === 'undefined') {
-  throw new Error('could not load workerPeer');
-}
-
 export const useAppStore = defineStore('app', () => {
   const loadedROM = ref<string>('');
   const colors = ref<ColorOptions>(defaultColors);
+
+  const notifications = useNotificationStore();
+  const workerPeer = inject<WorkerPeer>('workerPeer');
+  if (typeof workerPeer === 'undefined') {
+    throw new Error('could not load workerPeer');
+  }
 
   function isROMLoaded(): boolean {
     return loadedROM.value === '';
@@ -39,7 +38,7 @@ export const useAppStore = defineStore('app', () => {
     workerPeer!.setColors(colors.value);
   }
 
-  function buttonClicked(which: Buttons) {
+  function buttonClicked(which: Buttons): void {
     switch (which) {
       case 'start':
         workerPeer!.startEmu();
@@ -57,9 +56,11 @@ export const useAppStore = defineStore('app', () => {
   }
 
   return {
+    // state props 
     loadedROM,
     colors,
 
+    // methods
     buttonClicked,
     isROMLoaded,
     setColor,
