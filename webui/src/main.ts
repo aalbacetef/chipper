@@ -24,3 +24,16 @@ workerPeer.on(Event.WASMLoaded, () => {
 });
 
 workerPeer.loadWASM(new URL('webui.wasm', document.baseURI).toString());
+
+
+// play audio on first interaction
+document.addEventListener('DOMContentLoaded', () => {
+  document.addEventListener('click', () => {
+    const audio = document.querySelector('audio');
+    if (audio === null) {
+      return;
+    }
+
+    audio.play();
+  }, { once: true });
+})
