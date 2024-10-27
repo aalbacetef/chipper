@@ -8,6 +8,7 @@ import App from './App.vue';
 import router from './router';
 import { WorkerPeer } from './lib/peer';
 import { Event } from './lib/messages';
+import { AudioState, useAppStore } from './stores/app';
 
 const app = createApp(App);
 
@@ -33,6 +34,11 @@ document.addEventListener('DOMContentLoaded', () => {
     if (audio === null) {
       return;
     }
+
+    setTimeout(() => {
+      const appStore = useAppStore();
+      appStore.setAudioState(AudioState.Playing);
+    }, 150);
 
     audio.play();
   }, { once: true });

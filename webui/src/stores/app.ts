@@ -8,10 +8,19 @@ import { WorkerPeer } from '@/lib/peer';
 
 export type Buttons = 'start' | 'stop' | 'restart';
 
+export enum AudioState {
+  Playing,
+  NotPlaying,
+  Paused,
+}
+
 export const useAppStore = defineStore('app', () => {
+  // state
+  const audioState = ref<AudioState>(AudioState.NotPlaying);
   const loadedROM = ref<string>('');
   const colors = ref<ColorOptions>(defaultColors);
 
+  // helpers
   const notifications = useNotificationStore();
   const workerPeer = inject<WorkerPeer>('workerPeer');
   if (typeof workerPeer === 'undefined') {
@@ -20,6 +29,21 @@ export const useAppStore = defineStore('app', () => {
 
   function isROMLoaded(): boolean {
     return loadedROM.value === '';
+  }
+
+  function audioIsPlaying(): boolean {
+    return audioState.value === AudioState.Playing;
+  }
+
+  function setAudioState(s: AudioState): void {
+    switch (s) {
+      default:
+        notifications.push(Status.Error, `unknown audio status: ${s}`);
+        return;
+      case AudioState.Playing, AudioState.Paused, AudioState.NotPlaying:
+        audioState.value = s;
+        return;
+    }
   }
 
   function setColor(which: ColorNames, color: Color): void {
@@ -57,10 +81,13 @@ export const useAppStore = defineStore('app', () => {
 
   return {
     // state props 
+    audioState,
     loadedROM,
     colors,
 
     // methods
+    audioIsPlaying,
+    setAudioState,
     buttonClicked,
     isROMLoaded,
     setColor,
