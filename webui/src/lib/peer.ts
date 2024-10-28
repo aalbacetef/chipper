@@ -1,4 +1,4 @@
-import { MessageType, Event, type StopEmu, type RestartEmu, type SetColors } from '@/lib/messages';
+import { MessageType, Event, type StopEmu, type RestartEmu, type SetColors, type SetTickPeriod } from '@/lib/messages';
 
 import {
   KeyDirection,
@@ -85,6 +85,15 @@ export class WorkerPeer {
     this.postMessage<SetColors>({
       type: MessageType.SetColors,
       data: colors,
+    });
+  }
+
+  setTickPeriod(period: number): void {
+    this.on(Event.SetTickPeriod, () => console.log(`set tick period to: ${period}ms`), RunOnce);
+
+    this.postMessage<SetTickPeriod>({
+      type: MessageType.SetTickPeriod,
+      data: period,
     });
   }
 

@@ -14,8 +14,11 @@ export enum AudioState {
   Paused,
 }
 
+export const defaultTickPeriod = 2 // 2 milliseconds 
+
 export const useAppStore = defineStore('app', () => {
   // state
+  const tickPeriodMilliseconds = ref<number>(defaultTickPeriod);
   const audioState = ref<AudioState>(AudioState.NotPlaying);
   const loadedROM = ref<string>('');
   const colors = ref<ColorOptions>(defaultColors);
@@ -79,11 +82,21 @@ export const useAppStore = defineStore('app', () => {
     }
   }
 
+  function setTickPeriod(period: number): void {
+    if (period <= 0) {
+      throw new Error(`period must be > 0, got ${period}`);
+    }
+
+    tickPeriodMilliseconds.value = period;
+    workerPeer!.setTickPeriod(period);
+  }
+
   return {
     // state props 
     audioState,
     loadedROM,
     colors,
+    tickPeriodMilliseconds,
 
     // methods
     audioIsPlaying,
@@ -91,5 +104,6 @@ export const useAppStore = defineStore('app', () => {
     buttonClicked,
     isROMLoaded,
     setColor,
+    setTickPeriod,
   };
 });

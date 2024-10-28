@@ -13,6 +13,7 @@ declare global {
   function StartEmu(): void;
   function StopEmu(): void;
   function RestartEmu(): void;
+  function SetTickPeriod(periodMilliseconds: number): void;
   function LoadROM(arr: Uint8Array, n: number): void;
   function GetDisplay(buf: Uint8Array): number;
   function SendKeyboardEvent(key: number, repeat: boolean, direction: KeyDirection): void;

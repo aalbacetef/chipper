@@ -6,6 +6,7 @@ import type {
   LoadWASM,
   RestartEmu,
   SetColors,
+  SetTickPeriod,
   StartEmu,
   StopEmu,
   TransferOffscreenCanvas,
@@ -83,6 +84,9 @@ class WorkerInstance {
       case MessageType.SetColors:
         return this.handleSetColors(msg as SetColors);
 
+      case MessageType.SetTickPeriod:
+        return this.handleSetTickPeriod(msg as SetTickPeriod);
+
       default:
         console.log('unhandled message: ', msg);
     }
@@ -139,6 +143,11 @@ class WorkerInstance {
     const { key, repeat, direction } = msg.data;
 
     SendKeyboardEvent(key, repeat, direction);
+  }
+
+  handleSetTickPeriod(msg: SetTickPeriod): void {
+    self.SetTickPeriod(msg.data);
+    notifyStateChange(Event.SetTickPeriod);
   }
 }
 

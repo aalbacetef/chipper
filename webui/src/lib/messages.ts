@@ -14,6 +14,7 @@ export enum Event {
   EmuRestarted = 'emu-restarted',
   CanvasCreated = 'canvas-created',
   SetColors = 'set-colors',
+  SetTickPeriod = 'set-tick-period',
 }
 
 export enum MessageType {
@@ -26,6 +27,7 @@ export enum MessageType {
   TransferOffscreenCanvas = 'transfer-offscreen-canvas',
   KeyEvent = 'key-event',
   SetColors = 'set-colors',
+  SetTickPeriod = 'set-tick-period',
 }
 
 export type WorkerEvent = {
@@ -75,6 +77,11 @@ export type SetColors = {
   type: MessageType.SetColors;
   data: ColorOptions;
 };
+
+export type SetTickPeriod = {
+  type: MessageType.SetTickPeriod;
+  data: number;
+}
 
 export enum KeyDirection {
   Up,

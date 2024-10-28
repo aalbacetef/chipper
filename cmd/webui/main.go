@@ -120,7 +120,7 @@ func main() {
 	js.Global().Set("LoadROM", loadROMFn)
 	js.Global().Set("GetDisplay", sendDisplayToWASM)
 	js.Global().Set("SendKeyboardEvent", handleKeyPress)
-	js.Global().Set("SetTickerPeriod", tickerPeriodFn)
+	js.Global().Set("SetTickPeriod", tickerPeriodFn)
 
 	select {}
 }

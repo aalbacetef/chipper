@@ -9,9 +9,14 @@ import DrawArea from '@/components/draw-area.vue';
 import ColorPicker from '@/components/color-picker.vue';
 import { useAppStore, type Buttons } from '@/stores/app';
 
+const workerPeer = inject<WorkerPeer>('workerPeer');
+const appStore = useAppStore();
+
 const roms = ref<ROMEntry[]>([]);
 const loading = ref<boolean>(true);
 const audioManifest = ref<AudioManifest>();
+const selectedRomIndex = ref<number>(0);
+const tickPeriod = ref<number>(appStore.tickPeriodMilliseconds);
 
 loadAudioManifest()
   .then((m) => (audioManifest.value = m))
@@ -24,10 +29,7 @@ loadROMManifest()
   })
   .catch((err) => console.error('failed to load rom manifest: ', err));
 
-const selectedRomIndex = ref<number>(0);
 
-const workerPeer = inject<WorkerPeer>('workerPeer');
-const appStore = useAppStore();
 
 function handleLoadROMButton() {
   const rom = roms.value[selectedRomIndex.value];
@@ -56,13 +58,18 @@ function handleKeyUp(event: KeyboardEvent) {
     console.log(err);
   }
 }
+
+function updateTickPeriod() {
+  appStore.setTickPeriod(tickPeriod.value);
+}
 </script>
 
 <template>
   <main>
-    <div class="loading" v-if="loading">loading</div>
+    <div class="loading" v-if="loading">loading...</div>
     <div class="view--wrapper" v-if="!loading">
       <div class="control-panel">
+
         <div class="rom-loader">
           <select v-model="selectedRomIndex">
             <option v-for="(rom, index) in roms" :key="rom.path" :value="index">
@@ -73,33 +80,34 @@ function handleKeyUp(event: KeyboardEvent) {
           <button @click="handleLoadROMButton">Load ROM</button>
         </div>
 
-        <div class="color-control">
-          <p>pick color:</p>
-          <color-picker name="set" display="foreground" />
-          <color-picker name="clear" display="background" />
+        <div class="emulator-settings">
+          <div class="color-control">
+            <p>pick color:</p>
+            <color-picker name="set" display="foreground" />
+            <color-picker name="clear" display="background" />
+          </div>
+          <div class="advanced">
+            <label>
+              <p>Tick period (in milliseconds)</p>
+              <input type="number" v-model="tickPeriod" @change="updateTickPeriod" min="1" step="1" />
+            </label>
+          </div>
         </div>
 
-        <div class="emu-control">
+        <div class="state-control">
           <button @click="() => handleButton('start')">Start</button>
           <button @click="() => handleButton('stop')">Stop</button>
           <button @click="() => handleButton('restart')">Restart</button>
         </div>
-      </div>
 
-      <div
-        class="game-area"
-        tabindex="0"
-        @keydown.prevent="handleKeyDown"
-        @keyup.prevent="handleKeyUp"
-      >
+      </div><!-- control-panel END -->
+
+      <div class="game-area" tabindex="0" @keydown.prevent="handleKeyDown" @keyup.prevent="handleKeyUp">
         <draw-area />
       </div>
     </div>
 
-    <audio-player
-      :manifest="audioManifest"
-      v-if="audioManifest !== null && typeof audioManifest !== 'undefined'"
-    />
+    <audio-player :manifest="audioManifest" v-if="audioManifest !== null && typeof audioManifest !== 'undefined'" />
   </main>
 </template>
 
@@ -115,13 +123,19 @@ main {
   margin-bottom: 10px;
 }
 
-.emu-control {
+.emulator-settings {
+  display: flex;
+  flex-direction: row;
+
+}
+
+.state-control {
   margin-top: 10px;
   display: flex;
   flex-direction: row;
 }
 
-.emu-control button {
+.state-control button {
   margin-right: 5px;
 }
 
@@ -133,6 +147,11 @@ main {
   padding: 0;
   margin: 0;
 }
+
+.advanced {
+  margin-left: 10px;
+}
+
 
 .game-area {
   width: 100%;
