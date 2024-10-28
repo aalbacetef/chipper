@@ -49,7 +49,7 @@ web-lint: type-check web-prettier
 make-manifest:
 	./roms/manifest.fish
 
-copy-roms: make-manifest
+copy-roms: make-manifest 
 	rm -rf ./webui/public/roms/
 	mkdir ./webui/public/roms
 	cp -r ./roms/set-* ./webui/public/roms/
@@ -68,11 +68,17 @@ copy-wasm: build-wasm
 
 ### WebUI build
 
+clean-web: 
+	rm -rf ./webui/dist/
+
 web: copy-wasm copy-roms
 	cd webui && bun x vite build
 
-web-local: copy-wasm copy-roms
+web-local: clean-web copy-wasm copy-roms
 	cd webui && bun x vite build -m dev 
+
+web-serve: web-local
+	http-server ./webui/dist/
 
 dev: fmt
 	cd webui && bun x vite 
