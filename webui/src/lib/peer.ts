@@ -1,4 +1,11 @@
-import { MessageType, Event, type StopEmu, type RestartEmu, type SetColors, type SetTickPeriod } from '@/lib/messages';
+import {
+  MessageType,
+  Event,
+  type StopEmu,
+  type RestartEmu,
+  type SetColors,
+  type SetTickPeriod,
+} from '@/lib/messages';
 
 import {
   KeyDirection,

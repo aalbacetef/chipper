@@ -14,7 +14,7 @@ export enum AudioState {
   Paused,
 }
 
-export const defaultTickPeriod = 2 // 2 milliseconds 
+export const defaultTickPeriod = 2; // 2 milliseconds
 
 export const useAppStore = defineStore('app', () => {
   // state
@@ -43,7 +43,7 @@ export const useAppStore = defineStore('app', () => {
       default:
         notifications.push(Status.Error, `unknown audio status: ${s}`);
         return;
-      case AudioState.Playing, AudioState.Paused, AudioState.NotPlaying:
+      case (AudioState.Playing, AudioState.Paused, AudioState.NotPlaying):
         audioState.value = s;
         return;
     }
@@ -92,7 +92,7 @@ export const useAppStore = defineStore('app', () => {
   }
 
   return {
-    // state props 
+    // state props
     audioState,
     loadedROM,
     colors,

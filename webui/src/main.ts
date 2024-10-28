@@ -26,20 +26,23 @@ workerPeer.on(Event.WASMLoaded, () => {
 
 workerPeer.loadWASM(new URL('webui.wasm', document.baseURI).toString());
 
-
 // play audio on first interaction
 document.addEventListener('DOMContentLoaded', () => {
-  document.addEventListener('click', () => {
-    const audio = document.querySelector('audio');
-    if (audio === null) {
-      return;
-    }
+  document.addEventListener(
+    'click',
+    () => {
+      const audio = document.querySelector('audio');
+      if (audio === null) {
+        return;
+      }
 
-    setTimeout(() => {
-      const appStore = useAppStore();
-      appStore.setAudioState(AudioState.Playing);
-    }, 150);
+      setTimeout(() => {
+        const appStore = useAppStore();
+        appStore.setAudioState(AudioState.Playing);
+      }, 150);
 
-    audio.play();
-  }, { once: true });
-})
+      audio.play();
+    },
+    { once: true }
+  );
+});

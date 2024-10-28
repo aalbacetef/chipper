@@ -81,7 +81,7 @@ export type SetColors = {
 export type SetTickPeriod = {
   type: MessageType.SetTickPeriod;
   data: number;
-}
+};
 
 export enum KeyDirection {
   Up,

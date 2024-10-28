@@ -29,8 +29,6 @@ loadROMManifest()
   })
   .catch((err) => console.error('failed to load rom manifest: ', err));
 
-
-
 function handleLoadROMButton() {
   const rom = roms.value[selectedRomIndex.value];
   const romURL = new URL(rom.path, document.baseURI);
@@ -69,7 +67,6 @@ function updateTickPeriod() {
     <div class="loading" v-if="loading">loading...</div>
     <div class="view--wrapper" v-if="!loading">
       <div class="control-panel">
-
         <div class="rom-loader">
           <select v-model="selectedRomIndex">
             <option v-for="(rom, index) in roms" :key="rom.path" :value="index">
@@ -89,7 +86,13 @@ function updateTickPeriod() {
           <div class="advanced">
             <label>
               <p>Tick period (in milliseconds)</p>
-              <input type="number" v-model="tickPeriod" @change="updateTickPeriod" min="1" step="1" />
+              <input
+                type="number"
+                v-model="tickPeriod"
+                @change="updateTickPeriod"
+                min="1"
+                step="1"
+              />
             </label>
           </div>
         </div>
@@ -99,15 +102,23 @@ function updateTickPeriod() {
           <button @click="() => handleButton('stop')">Stop</button>
           <button @click="() => handleButton('restart')">Restart</button>
         </div>
+      </div>
+      <!-- control-panel END -->
 
-      </div><!-- control-panel END -->
-
-      <div class="game-area" tabindex="0" @keydown.prevent="handleKeyDown" @keyup.prevent="handleKeyUp">
+      <div
+        class="game-area"
+        tabindex="0"
+        @keydown.prevent="handleKeyDown"
+        @keyup.prevent="handleKeyUp"
+      >
         <draw-area />
       </div>
     </div>
 
-    <audio-player :manifest="audioManifest" v-if="audioManifest !== null && typeof audioManifest !== 'undefined'" />
+    <audio-player
+      :manifest="audioManifest"
+      v-if="audioManifest !== null && typeof audioManifest !== 'undefined'"
+    />
   </main>
 </template>
 
@@ -126,7 +137,6 @@ main {
 .emulator-settings {
   display: flex;
   flex-direction: row;
-
 }
 
 .state-control {
@@ -151,7 +161,6 @@ main {
 .advanced {
   margin-left: 10px;
 }
-
 
 .game-area {
   width: 100%;
