@@ -18,30 +18,37 @@ function handleClose() {
 </script>
 
 <template>
-  <div class="notification--wrapper" :class="props.state">
-    <div @click.prevent="handleClose" class="close">x</div>
+  <div class="notification" :class="props.state">
+    <div class="close" @click="handleClose">×</div>
     <p>{{ props.text }}</p>
   </div>
 </template>
 
 <style scoped>
-.notification--wrapper {
-  position: absolute;
-  z-index: 9999;
-  padding: 15px;
-  right: 15px;
-  bottom: 15px;
+.notification {
+  padding: 10px 15px;
 }
 
-.notification--wrapper.success {
+.notification.success {
   background-color: #33ff33;
+  background-color: #3d8d3d;
 }
 
-.notification--wrapper.error {
+.notification.error {
   background-color: #ff3333;
+  background-color: #b94f4f;
 }
 
-.notification--wrapper.warn {
+.notification.warn {
   background-color: #aaaa11;
+}
+
+.close {
+  text-align: right;
+  cursor: pointer;
+  height: fit-content;
+  position: absolute;
+  right: 30px;
+  top: 18px;
 }
 </style>

@@ -103,7 +103,6 @@ function updateTickPeriod() {
           <button @click="() => handleButton('restart')">Restart</button>
         </div>
       </div>
-      <!-- control-panel END -->
 
       <div
         class="game-area"
@@ -125,7 +124,6 @@ function updateTickPeriod() {
 <style scoped>
 main {
   width: 100%;
-  height: 100%;
   position: relative;
   margin-top: 15px;
 }

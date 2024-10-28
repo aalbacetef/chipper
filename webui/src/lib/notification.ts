@@ -1,6 +1,6 @@
 import type { Status } from './status';
 
-const defaultDuration = 1500;
+const defaultDuration = 2000;
 
 export type Notification = {
   id: string;

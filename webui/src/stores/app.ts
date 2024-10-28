@@ -43,7 +43,9 @@ export const useAppStore = defineStore('app', () => {
       default:
         notifications.push(Status.Error, `unknown audio status: ${s}`);
         return;
-      case (AudioState.Playing, AudioState.Paused, AudioState.NotPlaying):
+      case AudioState.Playing:
+      case AudioState.Paused:
+      case AudioState.NotPlaying:
         audioState.value = s;
         return;
     }

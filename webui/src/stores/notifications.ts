@@ -16,7 +16,7 @@ export const useNotificationStore = defineStore('notifications', () => {
     const notification = NewNotification(id, status, text, duration);
     items.value.push(notification);
 
-    setTimeout(() => close(id), duration);
+    setTimeout(() => close(id), notification.duration);
   }
 
   return { items, close, push };
