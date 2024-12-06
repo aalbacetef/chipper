@@ -7,6 +7,8 @@ import { loadAudioManifest, type AudioManifest } from '@/lib/music';
 import AudioPlayer from '@/components/audio-player.vue';
 import DrawArea from '@/components/draw-area.vue';
 import ColorPicker from '@/components/color-picker.vue';
+import KeyboardViewer from '@/components/keyboard-viewer.vue';
+
 import { useAppStore, type Buttons } from '@/stores/app';
 
 const workerPeer = inject<WorkerPeer>('workerPeer');
@@ -86,13 +88,7 @@ function updateTickPeriod() {
           <div class="advanced">
             <label>
               <p>Tick period (in milliseconds)</p>
-              <input
-                type="number"
-                v-model="tickPeriod"
-                @change="updateTickPeriod"
-                min="1"
-                step="1"
-              />
+              <input type="number" v-model="tickPeriod" @change="updateTickPeriod" min="1" step="1" />
             </label>
           </div>
         </div>
@@ -104,20 +100,17 @@ function updateTickPeriod() {
         </div>
       </div>
 
-      <div
-        class="game-area"
-        tabindex="0"
-        @keydown.prevent="handleKeyDown"
-        @keyup.prevent="handleKeyUp"
-      >
+      <div class="game-area" tabindex="0" @keydown.prevent="handleKeyDown" @keyup.prevent="handleKeyUp">
         <draw-area />
       </div>
     </div>
 
-    <audio-player
-      :manifest="audioManifest"
-      v-if="audioManifest !== null && typeof audioManifest !== 'undefined'"
-    />
+    <div class="bottom-panel">
+      <keyboard-viewer />
+
+      <audio-player :manifest="audioManifest" v-if="audioManifest !== null && typeof audioManifest !== 'undefined'" />
+
+    </div>
   </main>
 </template>
 
@@ -167,5 +160,11 @@ main {
 
 .game-area:focus-visible {
   outline: none;
+}
+
+.bottom-panel {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
 }
 </style>
