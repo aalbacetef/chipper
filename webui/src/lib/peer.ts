@@ -17,7 +17,9 @@ import {
   type StartEmu,
   type KeyEvent,
 } from '@/lib/messages';
-import type { ColorOptions } from './game';
+import { MissingKeyError, mapHexToKey, mapKeyToHex, type ColorOptions } from './game';
+
+import { useAppStore } from '@/stores/app';
 
 const RunOnce = true;
 
@@ -25,6 +27,7 @@ type StateChangeCB = (state: Event) => void;
 
 // WorkerPeer provides a set of methods to interact with the Worker from the main client code.
 export class WorkerPeer {
+  store;
   worker: Worker;
   callbacks: {
     [key in Event]?: StateChangeCB[];
@@ -39,6 +42,10 @@ export class WorkerPeer {
   constructor(worker: Worker) {
     this.worker = worker;
     this.worker.addEventListener('message', (msg) => this.handleMessage(msg.data));
+  }
+
+  setStore() {
+    this.store = useAppStore();
   }
 
   loadWASM(filename: string): void {
@@ -130,6 +137,14 @@ export class WorkerPeer {
   }
 
   sendKeyEvent(direction: KeyDirection, repeat: boolean, key: number): void {
+    try {
+      this.store.setKeyState(mapHexToKey(key), direction);
+    } catch (err) {
+      if (err instanceof MissingKeyError) {
+        // do nothing
+      }
+    }
+
     this.postMessage<KeyEvent>({
       type: MessageType.KeyEvent,
       data: {

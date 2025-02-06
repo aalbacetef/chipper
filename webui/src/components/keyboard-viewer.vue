@@ -1,7 +1,12 @@
 <script setup lang="ts">
+import { computed } from 'vue';
 import { KeyMap } from '@/lib/game';
+import { useAppStore } from '@/stores/app';
+import { KeyDirection } from '@/lib/messages';
 
 defineOptions({ name: 'keyboard-viewer' });
+
+const store = useAppStore();
 
 
 console.log('keys:', Object.keys(KeyMap));
@@ -31,13 +36,28 @@ let rows = [
   keys.slice(8, 12),
   keys.slice(12, 16),
 ];
+
+const pressed = computed(() => {
+  let down = [];
+  for (const key in store.keyStates) {
+    if (store.keyStates[key] === KeyDirection.Down) {
+      down.push(key);
+    }
+  }
+
+  return down;
+});
+
+function keyIsPressed(key: string): boolean {
+  return pressed.value.indexOf(strToKey(key)) > -1;
+}
 </script>
 
 <template>
   <div class="keyboard-viewer">
     <div class="rows">
       <div class="row" v-for="(row, index) in rows" :key="index">
-        <div class="key" v-for="key in row" :key="key">
+        <div class="key" v-for="key in row" :key="key" :class="{ 'pressed': keyIsPressed(key) }">
           {{ key }}
         </div>
       </div>
@@ -64,5 +84,9 @@ let rows = [
   margin-right: 5px;
   padding: 5px 10px;
   outline: 1px solid var(--fg-color);
+}
+
+.key.pressed {
+  background-color: yellow;
 }
 </style>

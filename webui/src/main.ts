@@ -22,6 +22,7 @@ workerPeer.on(Event.WASMLoaded, () => {
   app.provide<WorkerPeer>('workerPeer', workerPeer);
 
   app.mount('#app');
+  workerPeer.setStore();
 });
 
 workerPeer.loadWASM(new URL('webui.wasm', document.baseURI).toString());

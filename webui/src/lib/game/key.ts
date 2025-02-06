@@ -1,4 +1,4 @@
-export const KeyMap: Record<string, number> = {
+export const KeyMap: Record<KeyList, number> = {
   KeyV: 0,
   Digit1: 1,
   Digit2: 2,
@@ -17,12 +17,25 @@ export const KeyMap: Record<string, number> = {
   KeyC: 15,
 };
 
+export type KeyList = "KeyV" | "Digit1" | "Digit2" | "Digit3" | "Digit4" | "KeyQ" | "KeyW" | "KeyE" | "KeyR" | "KeyA" | "KeyS" | "KeyD" | "KeyF" | "KeyZ" | "KeyX" | "KeyC";
+
 export function mapKeyToHex(s: string): number {
   if (typeof KeyMap[s] === 'undefined') {
     throw new MissingKeyError(s);
   }
 
   return KeyMap[s];
+}
+
+export function mapHexToKey(num: number): string {
+  for (const key in KeyMap) {
+    const val = KeyMap[key];
+    if (num === val) {
+      return key;
+    }
+  }
+
+  throw new MissingKeyError(`num: ${num}`);
 }
 
 export class MissingKeyError extends Error {

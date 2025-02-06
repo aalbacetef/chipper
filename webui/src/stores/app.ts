@@ -1,10 +1,11 @@
 import { inject, ref } from 'vue';
 import { defineStore } from 'pinia';
-import { type Color, type ColorNames, type ColorOptions } from '@/lib/game';
+import { KeyMap, type Color, type ColorNames, type ColorOptions } from '@/lib/game';
 import { defaultColors } from '@/lib/game';
 import { useNotificationStore } from '@/stores/notifications';
 import { Status } from '@/lib/status';
 import { WorkerPeer } from '@/lib/peer';
+import { KeyDirection } from '@/lib/messages';
 
 export type Buttons = 'start' | 'stop' | 'restart';
 
@@ -16,12 +17,32 @@ export enum AudioState {
 
 export const defaultTickPeriod = 2; // 2 milliseconds
 
+type KeyStateMap = Record<keyof typeof KeyMap, KeyDirection>;
+
 export const useAppStore = defineStore('app', () => {
   // state
   const tickPeriodMilliseconds = ref<number>(defaultTickPeriod);
   const audioState = ref<AudioState>(AudioState.NotPlaying);
   const loadedROM = ref<string>('');
   const colors = ref<ColorOptions>(defaultColors);
+  const keyStates = ref<KeyStateMap>({
+    KeyV: KeyDirection.Up,
+    Digit1: KeyDirection.Up,
+    Digit2: KeyDirection.Up,
+    Digit3: KeyDirection.Up,
+    Digit4: KeyDirection.Up,
+    KeyQ: KeyDirection.Up,
+    KeyW: KeyDirection.Up,
+    KeyE: KeyDirection.Up,
+    KeyR: KeyDirection.Up,
+    KeyA: KeyDirection.Up,
+    KeyS: KeyDirection.Up,
+    KeyD: KeyDirection.Up,
+    KeyF: KeyDirection.Up,
+    KeyZ: KeyDirection.Up,
+    KeyX: KeyDirection.Up,
+    KeyC: KeyDirection.Up,
+  });
 
   // helpers
   const notifications = useNotificationStore();
@@ -93,12 +114,17 @@ export const useAppStore = defineStore('app', () => {
     workerPeer!.setTickPeriod(period);
   }
 
+  function setKeyState(key: keyof KeyStateMap, state: KeyDirection): void {
+    keyStates.value[key] = state;
+  }
+
   return {
     // state props
     audioState,
     loadedROM,
     colors,
     tickPeriodMilliseconds,
+    keyStates,
 
     // methods
     audioIsPlaying,
@@ -107,5 +133,6 @@ export const useAppStore = defineStore('app', () => {
     isROMLoaded,
     setColor,
     setTickPeriod,
+    setKeyState,
   };
 });
