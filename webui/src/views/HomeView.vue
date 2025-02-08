@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { inject, ref } from 'vue';
 import { WorkerPeer } from '@/lib/peer';
-import { loadROMManifest, type ROMEntry, mapKeyToHex } from '@/lib/game';
+import { loadROMManifest, type ROMEntry, mapKeyToHex, type KeyList } from '@/lib/game';
 import { loadAudioManifest, type AudioManifest } from '@/lib/music';
 
 import AudioPlayer from '@/components/audio-player.vue';
@@ -43,7 +43,7 @@ function handleButton(which: Buttons): void {
 
 function handleKeyDown(event: KeyboardEvent) {
   try {
-    const key = mapKeyToHex(event.code);
+    const key = mapKeyToHex(event.code as KeyList);
     workerPeer!.sendKeyDown(key, event.repeat);
   } catch (err) {
     console.log(err);
@@ -52,7 +52,7 @@ function handleKeyDown(event: KeyboardEvent) {
 
 function handleKeyUp(event: KeyboardEvent) {
   try {
-    const key = mapKeyToHex(event.code);
+    const key = mapKeyToHex(event.code as KeyList);
     workerPeer!.sendKeyUp(key, event.repeat);
   } catch (err) {
     console.log(err);
@@ -88,7 +88,13 @@ function updateTickPeriod() {
           <div class="advanced">
             <label>
               <p>Tick period (in milliseconds)</p>
-              <input type="number" v-model="tickPeriod" @change="updateTickPeriod" min="1" step="1" />
+              <input
+                type="number"
+                v-model="tickPeriod"
+                @change="updateTickPeriod"
+                min="1"
+                step="1"
+              />
             </label>
           </div>
         </div>
@@ -100,7 +106,12 @@ function updateTickPeriod() {
         </div>
       </div>
 
-      <div class="game-area" tabindex="0" @keydown.prevent="handleKeyDown" @keyup.prevent="handleKeyUp">
+      <div
+        class="game-area"
+        tabindex="0"
+        @keydown.prevent="handleKeyDown"
+        @keyup.prevent="handleKeyUp"
+      >
         <draw-area />
       </div>
     </div>
@@ -108,8 +119,10 @@ function updateTickPeriod() {
     <div class="bottom-panel">
       <keyboard-viewer />
 
-      <audio-player :manifest="audioManifest" v-if="audioManifest !== null && typeof audioManifest !== 'undefined'" />
-
+      <audio-player
+        :manifest="audioManifest"
+        v-if="audioManifest !== null && typeof audioManifest !== 'undefined'"
+      />
     </div>
   </main>
 </template>

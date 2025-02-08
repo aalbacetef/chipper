@@ -1,6 +1,6 @@
 import { inject, ref } from 'vue';
 import { defineStore } from 'pinia';
-import { KeyMap, type Color, type ColorNames, type ColorOptions } from '@/lib/game';
+import { type Color, type ColorNames, type ColorOptions, type KeyList } from '@/lib/game';
 import { defaultColors } from '@/lib/game';
 import { useNotificationStore } from '@/stores/notifications';
 import { Status } from '@/lib/status';
@@ -17,7 +17,7 @@ export enum AudioState {
 
 export const defaultTickPeriod = 2; // 2 milliseconds
 
-type KeyStateMap = Record<keyof typeof KeyMap, KeyDirection>;
+type KeyStateMap = Record<KeyList, KeyDirection>;
 
 export const useAppStore = defineStore('app', () => {
   // state

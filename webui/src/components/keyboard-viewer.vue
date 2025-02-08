@@ -1,22 +1,14 @@
 <script setup lang="ts">
 import { computed } from 'vue';
-import { KeyMap } from '@/lib/game';
 import { useAppStore } from '@/stores/app';
 import { KeyDirection } from '@/lib/messages';
+import { type KeyList } from '@/lib/game';
 
 defineOptions({ name: 'keyboard-viewer' });
 
 const store = useAppStore();
 
-
-console.log('keys:', Object.keys(KeyMap));
-
-const keys = [
-  '1', '2', '3', '4',
-  'Q', 'W', 'E', 'R',
-  'A', 'S', 'D', 'F',
-  'Z', 'X', 'C', 'V',
-];
+const keys = ['1', '2', '3', '4', 'Q', 'W', 'E', 'R', 'A', 'S', 'D', 'F', 'Z', 'X', 'C', 'V'];
 
 function strToKey(s: string): string {
   switch (s) {
@@ -24,23 +16,19 @@ function strToKey(s: string): string {
     case '2':
     case '3':
     case '4':
-      return "Digit" + s;
+      return 'Digit' + s;
     default:
-      return "Key" + s;
+      return 'Key' + s;
   }
 }
 
-let rows = [
-  keys.slice(0, 4),
-  keys.slice(4, 8),
-  keys.slice(8, 12),
-  keys.slice(12, 16),
-];
+let rows = [keys.slice(0, 4), keys.slice(4, 8), keys.slice(8, 12), keys.slice(12, 16)];
 
 const pressed = computed(() => {
   let down = [];
+
   for (const key in store.keyStates) {
-    if (store.keyStates[key] === KeyDirection.Down) {
+    if (store.keyStates[key as KeyList] === KeyDirection.Down) {
       down.push(key);
     }
   }
@@ -57,7 +45,7 @@ function keyIsPressed(key: string): boolean {
   <div class="keyboard-viewer">
     <div class="rows">
       <div class="row" v-for="(row, index) in rows" :key="index">
-        <div class="key" v-for="key in row" :key="key" :class="{ 'pressed': keyIsPressed(key) }">
+        <div class="key" v-for="key in row" :key="key" :class="{ pressed: keyIsPressed(key) }">
           {{ key }}
         </div>
       </div>

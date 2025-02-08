@@ -26,7 +26,7 @@ const RunOnce = true;
 type StateChangeCB = (state: Event) => void;
 type Store = {
   setKeyState: (key: KeyList, dir: KeyDirection) => void;
-}
+};
 
 // WorkerPeer provides a set of methods to interact with the Worker from the main client code.
 export class WorkerPeer {
