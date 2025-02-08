@@ -19,7 +19,7 @@ export const KeyMap: Record<KeyList, number> = {
 
 export type KeyList = "KeyV" | "Digit1" | "Digit2" | "Digit3" | "Digit4" | "KeyQ" | "KeyW" | "KeyE" | "KeyR" | "KeyA" | "KeyS" | "KeyD" | "KeyF" | "KeyZ" | "KeyX" | "KeyC";
 
-export function mapKeyToHex(s: string): number {
+export function mapKeyToHex(s: KeyList): number {
   if (typeof KeyMap[s] === 'undefined') {
     throw new MissingKeyError(s);
   }
@@ -27,11 +27,11 @@ export function mapKeyToHex(s: string): number {
   return KeyMap[s];
 }
 
-export function mapHexToKey(num: number): string {
+export function mapHexToKey(num: number): KeyList {
   for (const key in KeyMap) {
-    const val = KeyMap[key];
+    const val = KeyMap[key as KeyList];
     if (num === val) {
-      return key;
+      return key as KeyList;
     }
   }
 

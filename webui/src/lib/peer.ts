@@ -17,17 +17,20 @@ import {
   type StartEmu,
   type KeyEvent,
 } from '@/lib/messages';
-import { MissingKeyError, mapHexToKey, mapKeyToHex, type ColorOptions } from './game';
+import { MissingKeyError, mapHexToKey, type ColorOptions, type KeyList } from './game';
 
 import { useAppStore } from '@/stores/app';
 
 const RunOnce = true;
 
 type StateChangeCB = (state: Event) => void;
+type Store = {
+  setKeyState: (key: KeyList, dir: KeyDirection) => void;
+}
 
 // WorkerPeer provides a set of methods to interact with the Worker from the main client code.
 export class WorkerPeer {
-  store;
+  store: Store | null = null;
   worker: Worker;
   callbacks: {
     [key in Event]?: StateChangeCB[];
@@ -137,11 +140,13 @@ export class WorkerPeer {
   }
 
   sendKeyEvent(direction: KeyDirection, repeat: boolean, key: number): void {
-    try {
-      this.store.setKeyState(mapHexToKey(key), direction);
-    } catch (err) {
-      if (err instanceof MissingKeyError) {
-        // do nothing
+    if (this.store !== null) {
+      try {
+        this.store.setKeyState(mapHexToKey(key), direction);
+      } catch (err) {
+        if (!(err instanceof MissingKeyError)) {
+          console.error('[WorkerPeer.sendKeyEvent] error calling store.setKeyState: ', err);
+        }
       }
     }
 
