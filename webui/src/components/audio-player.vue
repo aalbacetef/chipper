@@ -1,10 +1,15 @@
 <script setup lang="ts">
 import { computed, onMounted, ref } from 'vue';
 import { type AudioManifest, type Song } from '@/lib/music';
+import { useAppStore, AudioState } from '@/stores/app';
+
+defineOptions({ name: 'audio-player' });
 
 type Props = {
   manifest: AudioManifest;
 };
+
+const appStore = useAppStore();
 
 const props = defineProps<Props>();
 const manifest = props.manifest;
@@ -20,6 +25,11 @@ onMounted(() => {
 });
 
 function playSong() {
+  if (appStore.audioIsPlaying()) {
+    return;
+  }
+
+  appStore.setAudioState(AudioState.Playing);
   audioElem.value?.play();
 }
 
@@ -45,6 +55,7 @@ function playPrev() {
 }
 
 function pauseAudio() {
+  appStore.setAudioState(AudioState.Paused);
   audioElem.value?.pause();
 }
 

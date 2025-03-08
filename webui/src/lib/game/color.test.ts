@@ -1,5 +1,5 @@
 import { describe, it } from 'vitest';
-import { hexToRGBA, RGBAToHex, type Color } from './game';
+import { hexToRGBA, RGBAToHex, type Color } from './color';
 
 describe('color', () => {
   it('should convert hex appropriately', ({ expect }) => {

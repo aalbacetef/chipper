@@ -1,4 +1,11 @@
-import { MessageType, Event, type StopEmu, type RestartEmu, type SetColors } from '@/lib/messages';
+import {
+  MessageType,
+  Event,
+  type StopEmu,
+  type RestartEmu,
+  type SetColors,
+  type SetTickPeriod,
+} from '@/lib/messages';
 
 import {
   KeyDirection,
@@ -10,14 +17,20 @@ import {
   type StartEmu,
   type KeyEvent,
 } from '@/lib/messages';
-import type { ColorOptions } from './game';
+import { MissingKeyError, mapHexToKey, type ColorOptions, type KeyList } from './game';
+
+import { useAppStore } from '@/stores/app';
 
 const RunOnce = true;
 
 type StateChangeCB = (state: Event) => void;
+type Store = {
+  setKeyState: (key: KeyList, dir: KeyDirection) => void;
+};
 
 // WorkerPeer provides a set of methods to interact with the Worker from the main client code.
 export class WorkerPeer {
+  store: Store | null = null;
   worker: Worker;
   callbacks: {
     [key in Event]?: StateChangeCB[];
@@ -32,6 +45,10 @@ export class WorkerPeer {
   constructor(worker: Worker) {
     this.worker = worker;
     this.worker.addEventListener('message', (msg) => this.handleMessage(msg.data));
+  }
+
+  setStore() {
+    this.store = useAppStore();
   }
 
   loadWASM(filename: string): void {
@@ -88,6 +105,15 @@ export class WorkerPeer {
     });
   }
 
+  setTickPeriod(period: number): void {
+    this.on(Event.SetTickPeriod, () => console.log(`set tick period to: ${period}ms`), RunOnce);
+
+    this.postMessage<SetTickPeriod>({
+      type: MessageType.SetTickPeriod,
+      data: period,
+    });
+  }
+
   setOnscreenCanvas(canvas: HTMLCanvasElement): void {
     this.onscreenCanvas = canvas;
   }
@@ -114,6 +140,16 @@ export class WorkerPeer {
   }
 
   sendKeyEvent(direction: KeyDirection, repeat: boolean, key: number): void {
+    if (this.store !== null) {
+      try {
+        this.store.setKeyState(mapHexToKey(key), direction);
+      } catch (err) {
+        if (!(err instanceof MissingKeyError)) {
+          console.error('[WorkerPeer.sendKeyEvent] error calling store.setKeyState: ', err);
+        }
+      }
+    }
+
     this.postMessage<KeyEvent>({
       type: MessageType.KeyEvent,
       data: {

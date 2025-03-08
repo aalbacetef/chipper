@@ -1,19 +1,24 @@
 <script setup lang="ts">
 import { inject, ref } from 'vue';
 import { WorkerPeer } from '@/lib/peer';
-import { loadROMManifest, type ROMEntry, mapKeyToHex, hexToRGBA, defaultColors } from '@/lib/game';
+import { loadROMManifest, type ROMEntry, mapKeyToHex, type KeyList } from '@/lib/game';
 import { loadAudioManifest, type AudioManifest } from '@/lib/music';
 
-import AudioPlayer from '@/components/AudioPlayer.vue';
-import DrawArea from '@/components/DrawArea.vue';
-import ColorPicker from '@/components/ColorPicker.vue';
+import AudioPlayer from '@/components/audio-player.vue';
+import DrawArea from '@/components/draw-area.vue';
+import ColorPicker from '@/components/color-picker.vue';
+import KeyboardViewer from '@/components/keyboard-viewer.vue';
+
+import { useAppStore, type Buttons } from '@/stores/app';
+
+const workerPeer = inject<WorkerPeer>('workerPeer');
+const appStore = useAppStore();
 
 const roms = ref<ROMEntry[]>([]);
 const loading = ref<boolean>(true);
 const audioManifest = ref<AudioManifest>();
-
-let colorSet = defaultColors.set;
-let colorClear = defaultColors.clear;
+const selectedRomIndex = ref<number>(0);
+const tickPeriod = ref<number>(appStore.tickPeriodMilliseconds);
 
 loadAudioManifest()
   .then((m) => (audioManifest.value = m))
@@ -26,31 +31,19 @@ loadROMManifest()
   })
   .catch((err) => console.error('failed to load rom manifest: ', err));
 
-const selectedRomIndex = ref<number>(0);
-
-const workerPeer = inject<WorkerPeer>('workerPeer');
-
 function handleLoadROMButton() {
   const rom = roms.value[selectedRomIndex.value];
   const romURL = new URL(rom.path, document.baseURI);
   workerPeer!.loadROM(romURL.toString());
 }
 
-function handleStartButton() {
-  workerPeer!.startEmu();
-}
-
-function handleStopButton() {
-  workerPeer!.stopEmu();
-}
-
-function handleRestartButton() {
-  workerPeer!.restartEmu();
+function handleButton(which: Buttons): void {
+  appStore.buttonClicked(which);
 }
 
 function handleKeyDown(event: KeyboardEvent) {
   try {
-    const key = mapKeyToHex(event.code);
+    const key = mapKeyToHex(event.code as KeyList);
     workerPeer!.sendKeyDown(key, event.repeat);
   } catch (err) {
     console.log(err);
@@ -59,33 +52,21 @@ function handleKeyDown(event: KeyboardEvent) {
 
 function handleKeyUp(event: KeyboardEvent) {
   try {
-    const key = mapKeyToHex(event.code);
+    const key = mapKeyToHex(event.code as KeyList);
     workerPeer!.sendKeyUp(key, event.repeat);
   } catch (err) {
     console.log(err);
   }
 }
 
-function updateColor(args: [string, string]): void {
-  const [name, colorHex] = args;
-
-  const color = hexToRGBA(colorHex);
-  switch (name) {
-    case 'set':
-      colorSet = color;
-      break;
-    case 'clear':
-      colorClear = color;
-      break;
-  }
-
-  workerPeer!.setColors({ set: colorSet, clear: colorClear });
+function updateTickPeriod() {
+  appStore.setTickPeriod(tickPeriod.value);
 }
 </script>
 
 <template>
   <main>
-    <div class="loading" v-if="loading">loading</div>
+    <div class="loading" v-if="loading">loading...</div>
     <div class="view--wrapper" v-if="!loading">
       <div class="control-panel">
         <div class="rom-loader">
@@ -98,18 +79,30 @@ function updateColor(args: [string, string]): void {
           <button @click="handleLoadROMButton">Load ROM</button>
         </div>
 
-        <div class="color-control">
-          <p>pick color:</p>
-          <ColorPicker name="set" display="foreground" @update="updateColor" />
-          <ColorPicker name="clear" display="background" @update="updateColor" />
+        <div class="emulator-settings">
+          <div class="color-control">
+            <p>pick color:</p>
+            <color-picker name="set" display="foreground" />
+            <color-picker name="clear" display="background" />
+          </div>
+          <div class="advanced">
+            <label>
+              <p>Tick period (in milliseconds)</p>
+              <input
+                type="number"
+                v-model="tickPeriod"
+                @change="updateTickPeriod"
+                min="1"
+                step="1"
+              />
+            </label>
+          </div>
         </div>
 
-        <div class="emu-control">
-          <button @click="handleStartButton">Start</button>
-
-          <button @click="handleStopButton">Stop</button>
-
-          <button @click="handleRestartButton">Restart</button>
+        <div class="state-control">
+          <button @click="() => handleButton('start')">Start</button>
+          <button @click="() => handleButton('stop')">Stop</button>
+          <button @click="() => handleButton('restart')">Restart</button>
         </div>
       </div>
 
@@ -119,21 +112,24 @@ function updateColor(args: [string, string]): void {
         @keydown.prevent="handleKeyDown"
         @keyup.prevent="handleKeyUp"
       >
-        <DrawArea />
+        <draw-area />
       </div>
     </div>
 
-    <AudioPlayer
-      :manifest="audioManifest"
-      v-if="audioManifest !== null && typeof audioManifest !== 'undefined'"
-    />
+    <div class="bottom-panel">
+      <keyboard-viewer />
+
+      <audio-player
+        :manifest="audioManifest"
+        v-if="audioManifest !== null && typeof audioManifest !== 'undefined'"
+      />
+    </div>
   </main>
 </template>
 
 <style scoped>
 main {
   width: 100%;
-  height: 100%;
   position: relative;
   margin-top: 15px;
 }
@@ -142,13 +138,18 @@ main {
   margin-bottom: 10px;
 }
 
-.emu-control {
+.emulator-settings {
+  display: flex;
+  flex-direction: row;
+}
+
+.state-control {
   margin-top: 10px;
   display: flex;
   flex-direction: row;
 }
 
-.emu-control button {
+.state-control button {
   margin-right: 5px;
 }
 
@@ -161,6 +162,10 @@ main {
   margin: 0;
 }
 
+.advanced {
+  margin-left: 10px;
+}
+
 .game-area {
   width: 100%;
   height: 100%;
@@ -168,5 +173,11 @@ main {
 
 .game-area:focus-visible {
   outline: none;
+}
+
+.bottom-panel {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
 }
 </style>
