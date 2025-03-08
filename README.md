@@ -1,4 +1,6 @@
 
+![CI status](https://github.com/aalbacetef/chipper/actions/workflows/ci.yml/badge.svg) [![License](https://img.shields.io/badge/License-BSD_3--Clause-blue.svg)](https://opensource.org/licenses/BSD-3-Clause) [![Go Report Card](https://goreportcard.com/badge/github.com/aalbacetef/chipper)](https://goreportcard.com/github.com/aalbacetef/chipper)
+
 # chipper
 
 Chipper is a CHIP-8 emulator written in Go. 
@@ -11,6 +13,7 @@ This is mostly for myself, just a set of TO-DOs for improving the code now that 
 
 - [ ] flesh out README
 - [ ] finish writing tests for the entire instruction set
-- [ ] improve the Web UI with keymap information + configuration
-- [ ] move state management to Pinia 
+- [x] improve the Web UI with keymap information
+- [ ] improve the Web UI with keymap configuration
+- [x] move state management to Pinia 
 - [ ] filter out some ROMs that won't show by default in a production build
