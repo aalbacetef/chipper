@@ -1,4 +1,6 @@
 
+![CI status](https://github.com/aalbacetef/chipper/actions/workflows/ci.yml/badge.svg) [![License](https://img.shields.io/badge/License-BSD_3--Clause-blue.svg)](https://opensource.org/licenses/BSD-3-Clause) [![Go Report Card](https://goreportcard.com/badge/github.com/aalbacetef/chipper)](https://goreportcard.com/github.com/aalbacetef/chipper)
+
 # chipper
 
 Chipper is a CHIP-8 emulator written in Go. 
